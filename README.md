@@ -8,10 +8,10 @@ Ennek a játéknek a célja hogy egymásra rakott lapokkal, ahol a színek fedik
 # Feladat: Mondrián szimulátor
 
 Szabályok:
- - Az inputot a palyak nevű mappából véletlenszerűen választja, majd ehhez a pályához az elemek mappából választ egy pályához megfelelő elemkészletet.
- - Van egy elemkészletünk adott méretű pályához, nem kell az összesen felhasználni, hanem ezekből kell lerakni.
- - Stratégiát egy függvényként kell megírni, kezdetnek két stratégiát érdemes megírni, egyik ha a nagyobb elemmel kezdünk és haladunk a kisebb fele, az eggyel bonyolultabban pedig az egyszéles elemeket próbáljuk lerakni oda, ahol a legvalószínűbb hogy jó helye lesz.
- - Lépésszámnak számít ha egy elemet sikerült elhelyezni a pályán, azonban nem feltétlen egyből a jó helyére raktuk.
- - A pályát akkor raktuk ki ha teljesen sikerült lefedni a megadott elemekkel, ha nem akkor annak a pályának nincs megoldása, kikukázhatjuk.
- - Kimenetként szeretnénk látni a generált pályát és hogy azt hogy sikerült kirakni a megadott elemekből, illetve hogy ezt hány lépésből sikerült.
+ - Az inputot a palyak nevű mappából véletlenszerűen választja, majd ehhez a pályához az elemek mappából választ egy pályához megfelelő elemkészletet. Vagyis ha a pálya neve "board_7_7"-dal kezdődik, akkor a neki megfelelő elemkészlet "items_7_7".
+ - Mostmár van egy elemkészletünk és egy adott méretű pályánk, ebből kell e lehető legtöbbet lerakni, amennyit csak lehet.
+ - Egy lerakott elem 1 lépésnek felel meg, a lépésszámot növeljük. Lépésszámnak számít ha egy elemet sikerült elhelyezni a pályán, azonban nem feltétlen egyből a jó helyére raktuk.
+ - Stratégiát egy függvényként kell megírni, kezdetnek egy stratégiát érdemes megírni, ahol sorbarakjuk az elemeket területnagyság szerint, és ilyen sorrendben rakosgatjuk le a pályára. Minden elemnek van egy betűneve a file-ban pl. d és ahova le lehet rakni a pályán ezt az elemet ott kitöltjük a betűnevével.
+ - A pályát akkor raktuk ki ha teljesen sikerült lefedni a megadott elemekkel, ha nem akkor annak a pályának nincs megoldása ebben az esetben a lehető legjobb megoldást rajzoljuk ki.
+ - Kimenetként szeretnénk látni a kiválasztott pályát, amivel kezdődik a játék, utána egy már kirakott pályát, illetve hogy ezt hány lépésből sikerült kirakni.
  - A kimenet egy csv fájl lesz, amiből a mesterséges intelligencia megtanulhatja, hogy egy pálya milyen nehézségi szintű.
