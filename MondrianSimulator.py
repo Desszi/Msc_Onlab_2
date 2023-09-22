@@ -1,57 +1,72 @@
-import numpy as np
-import pandas as pd
 import random
+import os
+def load_board_and_items():
+    # Kiválasztjuk a pályát a "palyak" mappából véletlenszerűen
+    palyak_path = "input/palyak/"
+    available_boards = [file for file in os.listdir(palyak_path) if file.startswith("board")]
+    selected_board = random.choice(available_boards)
 
-# Függvény a pálya inicializálásához
-def initialize_board():
-    board = np.zeros((8, 8), dtype=int)
-    return board
+    # Az első két szám kinyerése a pályanevből
+    board_size = selected_board.split("_")[1:3]  # Az első két számot kiválasztjuk
+    board_name = f"board_{board_size[0]}_{board_size[1]}"
 
-# Függvény az 1 egység hosszú elemek lerakásához
-def place_single_units(board, num_units):
-    for _ in range(num_units):
-        row, col = random.randint(0, 7), random.randint(0, 7)
-        while board[row, col] != 0:
-            row, col = random.randint(0, 7), random.randint(0, 7)
-        board[row, col] = 1
+    # Elemkészlet keresése az "items" mappában, ami a megfelelő mintával kezdődik
+    items_path = "input/elemek/"
+    matching_items = [file for file in os.listdir(items_path) if file.startswith(f"items_{board_size[0]}_{board_size[1]}")]
 
-# Függvény a területek méretének generálásához
-def generate_areas(num_areas):
-    areas = []
-    for _ in range(num_areas):
-        area_size = random.randint(1, 8)
-        areas.append(area_size)
-    return sorted(areas, reverse=True)
+    if matching_items:
+        # Ha találtunk egyező elemkészletet, válasszuk ki az elsőt
+        item_set_name = matching_items[0]
 
-# Függvény az elemek lerakásához a stratégiának megfelelően
-def place_elements(board, areas):
-    for area_size in areas:
-        for row in range(8 - area_size + 1):
-            for col in range(8 - area_size + 1):
-                if np.all(board[row:row + area_size, col:col + area_size] == 0):
-                    board[row:row + area_size, col:col + area_size] = 1
-                    break
+        # Elemkészlet betöltése
+        items_file = os.path.join(items_path, item_set_name)
+        with open(items_file, "r") as f:
+            item_set = [list(line.strip()) for line in f.readlines()]
 
+        return board_name, item_set
+    else:
+        # Ha nem találtunk egyező elemkészletet, jelentsünk hibát vagy térjünk vissza
+        raise FileNotFoundError(f"Nincs megfelelő elemlészlet ehhez a pályához: {board_name}")
 
-# Fő függvény a játék szimulációjához
-def play_mondrian_game():
-    board = initialize_board()
-    place_single_units(board, 8)
-    areas = generate_areas(8)
-    place_elements(board, areas)
-    return board
-
-# Függvény a játék CSV fájlba mentéséhez
-def save_game_to_csv(filename, num_games):
-    data = []
-    for _ in range(num_games):
-        board = play_mondrian_game()
-        num_moves = np.sum(board)
-        data.append((board, num_moves))
-
-    df = pd.DataFrame(data, columns=['Board', 'NumMoves'])
-    df.to_csv(filename, index=False)
+def print_board(board):
+    for row in board:
+        print(" ".join(str(item) for item in row))
 
 
-# 100 játék létrehozása és CSV fájlba mentése
-save_game_to_csv('mondrian_games.csv', 10)
+def place_items(board, item_set):
+    steps = 0
+    for row_idx in range(len(board)):
+        for col_idx in range(len(board[row_idx])):
+            if board[row_idx][col_idx] == ".":
+                item = item_set.pop(0) if item_set else None
+                if item:
+                    board[row_idx][col_idx] = item
+                    steps += 1
+                else:
+                    return board, steps
+    return board, steps
+
+def main():
+    selected_board, item_set = load_board_and_items()
+    print(f"Kiválasztott pálya: {selected_board}")
+
+    # Inicializáljuk a pályát '.'-el, ahol '.' a még üres területet jelzi
+    board_size = (len(item_set), len(item_set[0]))
+    board = [["." for _ in range(board_size[1])] for _ in range(board_size[0])]
+
+    # Elemek elhelyezése
+    placed_board, steps = place_items(board, item_set)
+
+    print("\nHozzá tartozó elemkészlet:")
+    print_board(board)
+
+    #if not item_set:
+       # print("\nSolution:")
+       # print_board(placed_board)
+      #  print(f"\nSolved in {steps} steps.")
+   # else:
+      #  print("\nNo solution found.")
+
+if __name__ == "__main__":
+    main()
+
