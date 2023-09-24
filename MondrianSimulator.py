@@ -1,5 +1,6 @@
 import os
 import random
+import numpy as np
 
 def load_board():
     # Kiválasztjuk a pályát a "palyak" mappából véletlenszerűen
@@ -21,7 +22,6 @@ print(f"Selected Board: {selected_board}")
 print(f"Board Name: {board_name}")
 for row in board:
     print("".join(row))
-
 
 def load_items(board_name):
     # Elemkészlet keresése az "items" mappában, ami a megfelelő mintával kezdődik
@@ -59,30 +59,55 @@ def load_items(board_name):
                     oo_lines = []
                 elif collecting_oo and not line.startswith('-'):
                     # Ha gyűjtjük az 'oo'-kat, és a sor nem '---', akkor hozzáadjuk a sorokat az 'oo_lines'-hoz
-                    print(current_letter, ":")
-                    print(oo_lines)
                     line = line.replace('o', current_letter)
                     oo_lines.append(line)
+                    #print(current_letter, ":")
+                    #print(oo_lines)
 
-                elif collecting_oo and line == '---':
+                elif collecting_oo and line.startswith('-'):
                     # Ha a sor '---', akkor befejezzük az 'oo'-k gyűjtését
-                    item_set.append([current_letter] + oo_lines)
+                    item_set.append(oo_lines)
+                    added_rotate(item_set)
                     collecting_oo = False
-               # else:
-                   # if current_letter:
-                        # Ha van aktuális betű, akkor az 'o'-kat cseréljük rá
-
-                        #item_set[0].append(line)
-
         return item_set
-
     return None
 
-# Tesztelés
+
+def added_rotate(item_set):
+    for i in range(len(item_set)):
+        first_item = item_set[i]
+
+        # Ellenőrizzük, hogy first_item üres-e vagy tartalmaz-e elemet
+        if first_item and len(first_item) > 0:
+            element_count = len(first_item)
+            character_length = len(first_item[0])
+
+            character = first_item[0][0]
+
+            new_element_count = character_length
+            new_character_length = element_count
+
+            rotate_array = []
+
+            # Az elem hozzáadása a tömbhöz a megfelelő számú alkalommal, kivéve, ha az element_count és character_length egyenlő
+            if element_count != character_length:
+                for _ in range(new_element_count):
+                    rotate_array.append(character * new_character_length)
+    item_set.append(rotate_array)
+    return item_set
+
+def remove_empty(item_set):
+    return [item for item in item_set if item and len(item) > 0]
+
+# Formázás és tesztelés
 selected_item_set = load_items(board_name)
+selected_item_set = added_rotate(selected_item_set)
+selected_item_set = remove_empty(selected_item_set)
+selected_item_set.pop()
 if selected_item_set:
     for item in selected_item_set:
-        print('\n'.join(item))
+        # print('\n'.join(item))
+        print("Ez egy elem:", item)
 else:
     print("Nincs egyező elemkészlet.")
 
