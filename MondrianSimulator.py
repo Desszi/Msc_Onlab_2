@@ -47,37 +47,36 @@ def load_items(board_name):
     if item_set_name:
         with open(os.path.join(items_path, item_set_name), "r") as f:
             item_set = []
-            current_item = []
+            current_letter = None
 
             for line in f.readlines():
                 line = line.strip()
-                if line == "----":
-                    if current_item:
-                        item_set.append(current_item)
-                    current_item = []
-                else:
-                    current_item.append(line)
 
-            if current_item:  # Ha az utolsó elem nincs sorvégződés után
-                item_set.append(current_item)
+                if len(line) == 1 and line != 'o':
+                    # Ha egy sor 1 karakterből áll, ami nem 'o', akkor ez egy betű
+                    current_letter = line
+                    collecting_oo = True
+                    oo_lines = []
+                elif collecting_oo and not line.startswith('-'):
+                    # Ha gyűjtjük az 'oo'-kat, és a sor nem '---', akkor hozzáadjuk a sorokat az 'oo_lines'-hoz
+                    print(current_letter, ":")
+                    print(oo_lines)
+                    line = line.replace('o', current_letter)
+                    oo_lines.append(line)
 
-        # Alakítsuk át az elemkészlet listában az elemeket az elvárt formátum szerint
-        formatted_item_set = []
-        current_letter = None
+                elif collecting_oo and line == '---':
+                    # Ha a sor '---', akkor befejezzük az 'oo'-k gyűjtését
+                    item_set.append([current_letter] + oo_lines)
+                    collecting_oo = False
+               # else:
+                   # if current_letter:
+                        # Ha van aktuális betű, akkor az 'o'-kat cseréljük rá
 
-        for item in item_set:
-            if not item:
-                continue
-            if item[0] != current_letter:
-                current_letter = item[0]
-                formatted_item_set.append([current_letter] + item[1:])
-            else:
-                formatted_item_set[-1].extend(item[1:])
+                        #item_set[0].append(line)
 
-        return formatted_item_set
+        return item_set
 
     return None
-
 
 # Tesztelés
 selected_item_set = load_items(board_name)
