@@ -20,6 +20,7 @@ def load_board():
 selected_board, board_name, board = load_board()
 print(f"Selected Board: {selected_board}")
 print(f"Board Name: {board_name}")
+board.pop()
 for row in board:
     print("".join(row))
 
@@ -111,80 +112,48 @@ if selected_item_set:
 else:
     print("Nincs egyező elemkészlet.")
 
-def place_items(board, items):
-    # Számoljuk meg az elemek területét és rendezzük őket csökkenő sorrendbe
-    sorted_items = sorted(items[1:], key=lambda x: sum(row.count('o') for row in x), reverse=True)
+#Itt lehet majd felsorolni a stratégiákat, hogy milyen logika szerint szeretnénk letenni az elemeket
+def strategy_order(selected_item_set):
+    # A tömböket a méretük szerint csökkenő sorrendbe rendezzük
+    selected_item_set.sort(key=lambda x: len(''.join(x)), reverse=True)
+    return selected_item_set
 
-    # Kezdetben nincsenek lépések
-    steps = 0
-
-    for item in sorted_items:
-        placed = False
-        best_placement = None
-        best_score = float('inf')
-
-        for row in range(len(board) - len(item) + 1):
-            for col in range(len(board[0]) - len(item[0]) + 1):
-                can_place = True
-                score = 0
-
-                for i in range(len(item)):
-                    for j in range(len(item[0])):
-                        if item[i][j] == 'o':
-                            if board[row + i][col + j] == 'b':
-                                can_place = False
-                                break
-                        elif item[i][j] not in ['a', 'b']:
-                            if board[row + i][col + j] != item[i][j]:
-                                can_place = False
-                                break
-                        elif item[i][j] == 'a' and board[row + i][col + j] == '1':
-                            score += 1
-                            if score > best_score:
-                                can_place = False
-                                break
-
-                    if not can_place:
-                        break
-
-                if can_place:
-                    if score < best_score:
-                        best_placement = (row, col)
-                        best_score = score
-
-        if best_placement is not None:
-            row, col = best_placement
+#Egy elemet megpróbálunk lerakni a pályán
+def place_item(board, item):
+    for row in range(len(board) - len(item) + 1):
+        for col in range(len(board[0]) - len(item[0]) + 1):
+            can_place = True
             for i in range(len(item)):
                 for j in range(len(item[0])):
-                    if item[i][j] == 'o':
-                        board[row + i][col + j] = 'b'
-                    elif item[i][j] not in ['a', 'b']:
-                        board[row + i][col + j] = item[i][j]
-            placed = True
-            steps += 1
+                    if item[i][j] == 1 and board[row + i][col + j] != 0:
+                        can_place = False
+                        break
+                if not can_place:
+                    break
+            if can_place:
+                for i in range(len(item)):
+                    for j in range(len(item[0])):
+                        if item[i][j] == 1:
+                            board[row + i][col + j] = 1
+                return True
+    return False
 
-    return steps
+#Lerakjuk az elemeket és megmondjuk hogy milyen stratégiát használunk ehhez
+def place_sorted_items(board, selected_item_set):
+    sorted_items = strategy_order(selected_item_set)
+    for item in sorted_items:
+        if not place_item(board, item):
+            break
 
+place_sorted_items(board, selected_item_set)
+for row in board:
+    print("Ez az:", row)
+
+#Itt majd ki fogjuk írni a kezdeti pályát a megoldást és a lépésszámot, amiból később a kezdeti pályát és a lépésszámot egy csv filebe fogjuk rakni
 def print_board(board, steps):
     # Kiírjuk a pályát és a lépésszámot
     print(f"Lépésszám: {steps}")
     for row in board:
         print("".join(row))
 
-#def load_board_and_solve():
-  #  board_size = (7, 8)  # Például, itt állítsd be a pálya méretét
-    #selected_board, board_name = load_board()
-    #items = load_items(board_name)
 
-    # Inicializáljuk a pályát
-   # board = [['o' for _ in range(board_size[1])] for _ in range(board_size[0])]
-
-   # steps = place_items(board, items)
-
-    #print_board(board, steps)
-
-   # return board_name, board
-
-
-# Tesztelés
-#load_board_and_solve()
