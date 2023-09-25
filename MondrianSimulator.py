@@ -125,7 +125,7 @@ def place_item(board, item):
             can_place = True
             for i in range(len(item)):
                 for j in range(len(item[0])):
-                    if item[i][j] == 1 and board[row + i][col + j] != 0:
+                    if board[i][j] == 1 and board[row + i][col + j] != 0:
                         can_place = False
                         break
                 if not can_place:
@@ -133,21 +133,27 @@ def place_item(board, item):
             if can_place:
                 for i in range(len(item)):
                     for j in range(len(item[0])):
-                        if item[i][j] == 1:
-                            board[row + i][col + j] = 1
+                        if board[i][j] == 0:
+                            board[row + i][col + j] = item[i][j]  # Cseréljük ki az elem karakterére
                 return True
     return False
-
-#Lerakjuk az elemeket és megmondjuk hogy milyen stratégiát használunk ehhez
-def place_sorted_items(board, selected_item_set):
+def place_sorted_items(board,selected_item_set):
     sorted_items = strategy_order(selected_item_set)
+    solved_board = [row[:] for row in board]  # Másolat készítése a kiinduló pályáról
     for item in sorted_items:
-        if not place_item(board, item):
-            break
+        placed = place_item(solved_board, item)
+        if not placed:
+            return None  # Nem sikerült lerakni az elemet, visszatérünk None értékkel
+    return solved_board  # Visszatérünk a megoldott pályával
 
-place_sorted_items(board, selected_item_set)
-for row in board:
-    print("Ez az:", row)
+solved_board = place_sorted_items(board, selected_item_set)
+
+# Eredmény kiírása
+if solved_board is not None:
+    for row in solved_board:
+        print("Megoldott sor:", row)
+else:
+    print("Nem sikerült lerakni az elemeket.")
 
 #Itt majd ki fogjuk írni a kezdeti pályát a megoldást és a lépésszámot, amiból később a kezdeti pályát és a lépésszámot egy csv filebe fogjuk rakni
 def print_board(board, steps):
