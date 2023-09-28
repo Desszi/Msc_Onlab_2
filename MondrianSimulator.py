@@ -1,3 +1,4 @@
+import csv
 import os
 import random
 import numpy as np
@@ -123,57 +124,82 @@ def strategy_order(selected_item_set):
     return selected_item_set
 
 
-def place_item(selected_item_set, board, row_idx=0):
+def place_items(selected_item_set, board):
     sorted_items = strategy_order(selected_item_set)
-    steps = 0
-    def is_placed(x, y, sorted_items):
-        for i in range(len(sorted_items)):
-            for j in range(len(sorted_items[i])):
-                if sorted_items[i][j] != '0' and (y + i >= len(board) or x + j >= len(board[0]) or board[y + i][x + j] != '0'):
-                    return False
-        return True
+    def is_placed(x, y, item, placed):
+        hidden_zeros = 0
+        for i in range(len(item)):
+            for j in range(len(item[i])):
+                # Ellenőrizzük az ütközéseket
+                if item[i][j] != '0' and (y + i >= len(board) or x + j >= len(board[0]) or board[y + i][x + j] != '0'):
+                    return False, 0
+                # Számoljuk az alakzat által takart '0' karaktereket
+                elif item[i][j] == '0' and board[y + i][x + j] == '0':
+                    hidden_zeros += 1
 
-    def take_item(x, y, sorted_items):
-        for i in range(len(sorted_items)):
-            for j in range(len(sorted_items[i])):
-                if sorted_items[i][j] != '0':
+        # Ha az alakzat karaktere már szerepel az elhelyezett listában, akkor az alakzatot nem szabad elhelyezni
+        if any(char in placed for char in ''.join(item)):
+            return False, 0
+        return True, hidden_zeros
+
+    def take_place(x, y, item):
+        for i in range(len(item)):
+            for j in range(len(item[i])):
+                if item[i][j] != '0':
                     board[y + i][x + j] = item[i][j]
 
-
-    while row_idx < len(sorted_items):
-        item = sorted_items[row_idx]
-        placed = False
+    is_placed_array = []
+    steps = 0
+    for item in sorted_items:
+        best_x = best_y = -1
+        most_zeros = -1
         for y in range(len(board) - len(item) + 1):
             for x in range(len(board[0]) - len(item[0]) + 1):
-                if is_placed(x, y, item):
-                    take_item(x, y, item)
-                    placed = True
-                    break
-            if placed:
+                takeit, hidden_zeros = is_placed(x, y, item, is_placed_array)
                 steps += 1
-                break
+                if takeit and hidden_zeros > most_zeros:
+                    most_zeros = hidden_zeros
+                    best_x = x
+                    best_y = y
 
-        # Ha sikerült elhelyezni vagy páros indexű sor volt, akkor lépjünk tovább a következő páratlan indexre.
-        if placed or row_idx % 2 == 1:
-            row_idx += 2 if row_idx % 2 == 0 else 1
-        else:
-            # Ha nem sikerült elhelyezni, lépjünk tovább a következő páros indexre.
-            row_idx += 1
+        # Ha találtunk jó pozíciót az alakzathoz, akkor helyezzük el és jegyezzük meg az elhelyezett karaktereket
+        if best_x != -1 and best_y != -1:
+            take_place(best_x, best_y, item)
+            is_placed_array.extend([char for char in ''.join(item) if char != '0'])
+
     return steps
 
-steps = place_item(selected_item_set, board)
+# Futtatjuk a kódot
+steps = place_items(selected_item_set, board)
+
+# Eredmény kiírása
+for row in start_board:
+    print(' '.join(row))
 
 for row in board:
     print(' '.join(row))
-
-print(f"Lépésszám: {steps}")
+print(f"Lerakási kísérletek száma: {steps}")
 
 
 #Itt majd ki fogjuk írni a kezdeti pályát a megoldást és a lépésszámot, amiból később a kezdeti pályát és a lépésszámot egy csv filebe fogjuk rakni
-def print_board(board, steps):
-    # Kiírjuk a pályát és a lépésszámot
-    print(f"Lépésszám: {steps}")
-    for row in board:
-        print("".join(row))
 
+def print_board_csv(start_board, steps):
+    # CSV fájl neve
+    # CSV fájl neve
+    csv_fajl_nev = 'board_game.csv'
+
+    # A játéktábla és lépésszám összefűzése egy listába
+    data = [",".join(row) for row in start_board]  # Sorok vesszővel választva
+
+    # Az adatok írása a CSV fájlba
+    with open(csv_fajl_nev, mode='a', newline='') as file:
+        if os.path.exists(csv_fajl_nev):
+            file.write('"')
+            file.write(',\n '.join(data))  # Sorokat idézőjelek között vesszővel elválasztva írjuk
+            file.write('",')
+            file.write(str(steps))  # Lépésszám hozzáadása
+            file.write('\n')
+
+
+print_board_csv(start_board, steps)
 
