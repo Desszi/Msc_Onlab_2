@@ -14,14 +14,18 @@ def load_board():
     with open(os.path.join(palyak_path, selected_board), "r") as f:
         board = [list(line.strip()) for line in f.readlines()]
 
-    return selected_board, board_name, board
+    with open(os.path.join(palyak_path, selected_board), "r") as f:
+        start_board = [list(line.strip()) for line in f.readlines()]
+
+    return selected_board, board_name, board, start_board
 
 # Tesztelés
-selected_board, board_name, board = load_board()
+selected_board, board_name, board, start_board = load_board()
 print(f"Selected Board: {selected_board}")
 print(f"Board Name: {board_name}")
 board.pop()
-for row in board:
+start_board.pop()
+for row in start_board:
     print("".join(row))
 
 def load_items(board_name):
@@ -118,42 +122,52 @@ def strategy_order(selected_item_set):
     selected_item_set.sort(key=lambda x: len(''.join(x)), reverse=True)
     return selected_item_set
 
-#Egy elemet megpróbálunk lerakni a pályán
-def place_item(board, item):
-    for row in range(len(board) - len(item) + 1):
-        for col in range(len(board[0]) - len(item[0]) + 1):
-            can_place = True
-            for i in range(len(item)):
-                for j in range(len(item[0])):
-                    if board[i][j] == 1 and board[row + i][col + j] != 0:
-                        can_place = False
-                        break
-                if not can_place:
-                    break
-            if can_place:
-                for i in range(len(item)):
-                    for j in range(len(item[0])):
-                        if board[i][j] == 0:
-                            board[row + i][col + j] = item[i][j]  # Cseréljük ki az elem karakterére
-                return True
-    return False
-def place_sorted_items(board,selected_item_set):
+
+def place_item(selected_item_set, board, row_idx=0):
     sorted_items = strategy_order(selected_item_set)
-    solved_board = [row[:] for row in board]  # Másolat készítése a kiinduló pályáról
-    for item in sorted_items:
-        placed = place_item(solved_board, item)
-        if not placed:
-            return None  # Nem sikerült lerakni az elemet, visszatérünk None értékkel
-    return solved_board  # Visszatérünk a megoldott pályával
+    steps = 0
+    def is_placed(x, y, sorted_items):
+        for i in range(len(sorted_items)):
+            for j in range(len(sorted_items[i])):
+                if sorted_items[i][j] != '0' and (y + i >= len(board) or x + j >= len(board[0]) or board[y + i][x + j] != '0'):
+                    return False
+        return True
 
-solved_board = place_sorted_items(board, selected_item_set)
+    def take_item(x, y, sorted_items):
+        for i in range(len(sorted_items)):
+            for j in range(len(sorted_items[i])):
+                if sorted_items[i][j] != '0':
+                    board[y + i][x + j] = item[i][j]
 
-# Eredmény kiírása
-if solved_board is not None:
-    for row in solved_board:
-        print("Megoldott sor:", row)
-else:
-    print("Nem sikerült lerakni az elemeket.")
+
+    while row_idx < len(sorted_items):
+        item = sorted_items[row_idx]
+        placed = False
+        for y in range(len(board) - len(item) + 1):
+            for x in range(len(board[0]) - len(item[0]) + 1):
+                if is_placed(x, y, item):
+                    take_item(x, y, item)
+                    placed = True
+                    break
+            if placed:
+                steps += 1
+                break
+
+        # Ha sikerült elhelyezni vagy páros indexű sor volt, akkor lépjünk tovább a következő páratlan indexre.
+        if placed or row_idx % 2 == 1:
+            row_idx += 2 if row_idx % 2 == 0 else 1
+        else:
+            # Ha nem sikerült elhelyezni, lépjünk tovább a következő páros indexre.
+            row_idx += 1
+    return steps
+
+steps = place_item(selected_item_set, board)
+
+for row in board:
+    print(' '.join(row))
+
+print(f"Lépésszám: {steps}")
+
 
 #Itt majd ki fogjuk írni a kezdeti pályát a megoldást és a lépésszámot, amiból később a kezdeti pályát és a lépésszámot egy csv filebe fogjuk rakni
 def print_board(board, steps):
