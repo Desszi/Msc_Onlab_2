@@ -15,3 +15,11 @@ Szabályok:
  - A pályát akkor raktuk ki ha teljesen sikerült lefedni a megadott elemekkel, ha nem akkor annak a pályának nincs megoldása ebben az esetben a lehető legjobb megoldást rajzoljuk ki.
  - Kimenetként szeretnénk látni a kiválasztott pályát, amivel kezdődik a játék, utána egy már kirakott pályát, illetve hogy ezt hány lépésből sikerült kirakni.
  - A kimenet egy csv fájl lesz, amiből a mesterséges intelligencia megtanulhatja, hogy egy pálya milyen nehézségi szintű.
+
+
+# Szépséghibák és Jupiter Notebook
+
+1. Ha van a játéknak 2 megoldása akkor azt a pályát dobjuk el, ne foglalkozzunk vele
+2. Ha az adatok és a becsült lépésszámok nagyságrendileg megfelelnek a validált halmaznak, akkor le lehet venni az inputot és genráljuk a csv-be az adatot, lehessen megadni hogy mennyi kell
+3. Jupiter Notebookba kiírni a dolgokat leírásokkal úgy mint az Önlab 1-en
+4. Beadni a mesterséges intelligenciának az új, generált csv-t és megnézni, hogy az előző eredményekhez képest hogy becsülgeti a nehézségi szinteket
