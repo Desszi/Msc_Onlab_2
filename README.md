@@ -20,6 +20,6 @@ Szabályok:
 # Szépséghibák és Jupiter Notebook
 
 1. Ha van a játéknak 2 megoldása akkor azt a pályát dobjuk el, ne foglalkozzunk vele
-2. Ha az adatok és a becsült lépésszámok nagyságrendileg megfelelnek a validált halmaznak, akkor le lehet venni az inputot és genráljuk a csv-be az adatot, lehessen megadni hogy mennyi kell
+2. Ha az adatok és a becsült lépésszámok nagyságrendileg megfelelnek a validált halmaznak, akkor le lehet venni az inputot és generáljuk a csv-be az adatot, lehessen megadni hogy mennyi kell
 3. Jupiter Notebookba kiírni a dolgokat leírásokkal úgy mint az Önlab 1-en
 4. Beadni a mesterséges intelligenciának az új, generált csv-t és megnézni, hogy az előző eredményekhez képest hogy becsülgeti a nehézségi szinteket
