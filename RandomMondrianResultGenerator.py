@@ -54,4 +54,4 @@ def save_game_to_csv(filename, num_games):
 
 
 # 100 játék létrehozása és CSV fájlba mentése
-save_game_to_csv('mondrian_games.csv', 10)
+save_game_to_csv('mondrian_games.csv', 100)

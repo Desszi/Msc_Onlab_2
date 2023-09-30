@@ -2,7 +2,32 @@ import csv
 import os
 import random
 import numpy as np
+import random
 
+def create_random_board():
+    rows = random.randint(6, 8)
+    cols = random.randint(6, 8)
+
+    matrix = [[random.choices([0, 1], weights=[0.75, 0.25])[0] for _ in range(cols)] for _ in range(rows)]
+
+    # A board létrehozása a kívánt formátumban
+    board = [list(map(int, row)) for row in matrix]
+
+    # A start_board is a board másolata
+    start_board = [row.copy() for row in board]
+
+    board_name = f"board_{rows}_{cols}"
+    return board_name, board, start_board
+
+# Függvény tesztelése
+# Példa egy véletlenszerű méretű mátrix létrehozására
+board_name, board, start_board = create_random_board()
+print(f"Selected Board:")
+for row in start_board:
+    print(row)
+print(f"Board Name: {board_name}")
+
+"""
 def load_board():
     # Kiválasztjuk a pályát a "palyak" mappából véletlenszerűen
     palyak_path = "input/palyak/"
@@ -19,15 +44,9 @@ def load_board():
         start_board = [list(line.strip()) for line in f.readlines()]
 
     return selected_board, board_name, board, start_board
-
+"""
 # Tesztelés
-selected_board, board_name, board, start_board = load_board()
-print(f"Selected Board: {selected_board}")
-print(f"Board Name: {board_name}")
-board.pop()
-start_board.pop()
-for row in start_board:
-    print("".join(row))
+
 
 def load_items(board_name):
     # Elemkészlet keresése az "items" mappában, ami a megfelelő mintával kezdődik
@@ -173,11 +192,11 @@ def place_items(selected_item_set, board):
 steps = place_items(selected_item_set, board)
 
 # Eredmény kiírása
-for row in start_board:
-    print(' '.join(row))
+#for row in start_board:
+#    print(row)
 
 for row in board:
-    print(' '.join(row))
+    print(row)
 print(f"Lerakási kísérletek száma: {steps}")
 
 
@@ -189,7 +208,7 @@ def print_board_csv(start_board, steps):
     csv_fajl_nev = 'board_game.csv'
 
     # A játéktábla és lépésszám összefűzése egy listába
-    data = [",".join(row) for row in start_board]  # Sorok vesszővel választva
+    data = [",".join(map(str, row)) for row in start_board]  # Sorok vesszővel választva
 
     # Az adatok írása a CSV fájlba
     with open(csv_fajl_nev, mode='a', newline='') as file:
@@ -202,4 +221,3 @@ def print_board_csv(start_board, steps):
 
 
 print_board_csv(start_board, steps)
-
