@@ -10,22 +10,12 @@ def create_random_board():
 
     matrix = [[random.choices([0, 1], weights=[0.75, 0.25])[0] for _ in range(cols)] for _ in range(rows)]
 
-    # A board létrehozása a kívánt formátumban
     board = [list(map(int, row)) for row in matrix]
-
-    # A start_board is a board másolata
     start_board = [row.copy() for row in board]
 
     board_name = f"board_{rows}_{cols}"
     return board_name, board, start_board
 
-# Függvény tesztelése
-# Példa egy véletlenszerű méretű mátrix létrehozására
-board_name, board, start_board = create_random_board()
-print(f"Selected Board:")
-for row in start_board:
-    print(row)
-print(f"Board Name: {board_name}")
 
 """
 def load_board():
@@ -45,9 +35,6 @@ def load_board():
 
     return selected_board, board_name, board, start_board
 """
-# Tesztelés
-
-
 def load_items(board_name):
     # Elemkészlet keresése az "items" mappában, ami a megfelelő mintával kezdődik
     items_path = "input/elemek/"
@@ -124,17 +111,6 @@ def added_rotate(item_set):
 def remove_empty(item_set):
     return [item for item in item_set if item and len(item) > 0]
 
-# Formázás és tesztelés
-selected_item_set = load_items(board_name)
-selected_item_set = added_rotate(selected_item_set)
-selected_item_set = remove_empty(selected_item_set)
-selected_item_set.pop()
-if selected_item_set:
-    for item in selected_item_set:
-        # print('\n'.join(item))
-        print("Ez egy elem:", item)
-else:
-    print("Nincs egyező elemkészlet.")
 
 #Itt lehet majd felsorolni a stratégiákat, hogy milyen logika szerint szeretnénk letenni az elemeket
 def strategy_order(selected_item_set):
@@ -143,7 +119,7 @@ def strategy_order(selected_item_set):
     return selected_item_set
 
 
-def place_items(selected_item_set, board):
+def place_items(selected_item_set, board, board_name):
     sorted_items = strategy_order(selected_item_set)
     def is_placed(x, y, item, placed):
         hidden_zeros = 0
@@ -188,17 +164,6 @@ def place_items(selected_item_set, board):
 
     return steps
 
-# Futtatjuk a kódot
-steps = place_items(selected_item_set, board)
-
-# Eredmény kiírása
-#for row in start_board:
-#    print(row)
-
-for row in board:
-    print(row)
-print(f"Lerakási kísérletek száma: {steps}")
-
 
 #Itt majd ki fogjuk írni a kezdeti pályát a megoldást és a lépésszámot, amiból később a kezdeti pályát és a lépésszámot egy csv filebe fogjuk rakni
 
@@ -219,5 +184,43 @@ def print_board_csv(start_board, steps):
             file.write(str(steps))  # Lépésszám hozzáadása
             file.write('\n')
 
+def main():
+    # Példa egy véletlenszerű méretű mátrix létrehozására
+    board_name, board, start_board = create_random_board()
+    print(f"Selected Board:")
+    for row in start_board:
+        print(row)
+    print(f"Board Name: {board_name}")
 
-print_board_csv(start_board, steps)
+    # Formázás és tesztelés
+    selected_item_set = load_items(board_name)
+    selected_item_set = added_rotate(selected_item_set)
+    selected_item_set = remove_empty(selected_item_set)
+    selected_item_set.pop()
+    if selected_item_set:
+        for item in selected_item_set:
+            # print('\n'.join(item))
+            print("Ez egy elem:", item)
+    else:
+        print("Nincs egyező elemkészlet.")
+
+    # Futtatjuk a kódot
+    steps = place_items(selected_item_set, board, board_name)
+
+    # Eredmény kiírása
+    #for row in start_board:
+    #    print(row)
+
+    for row in board:
+        print(row)
+    print(f"Lerakási kísérletek száma: {steps}")
+
+    return start_board, steps
+
+def save_game_to_csv(num_games):
+    for _ in range(num_games):
+        start_board, steps = main()
+        print_board_csv(start_board, steps)
+
+# x játék létrehozása és CSV fájlba mentése
+save_game_to_csv(1000)
