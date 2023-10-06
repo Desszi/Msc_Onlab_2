@@ -179,7 +179,7 @@ def print_board_csv(start_board, steps):
     with open(csv_fajl_nev, mode='a', newline='') as file:
         if os.path.exists(csv_fajl_nev):
             file.write('"')
-            file.write(',\n '.join(data))  # Sorokat idézőjelek között vesszővel elválasztva írjuk
+            file.write('\n'.join(data))  # Sorokat idézőjelek között vesszővel elválasztva írjuk
             file.write('",')
             file.write(str(steps))  # Lépésszám hozzáadása
             file.write('\n')
@@ -223,4 +223,4 @@ def save_game_to_csv(num_games):
         print_board_csv(start_board, steps)
 
 # x játék létrehozása és CSV fájlba mentése
-save_game_to_csv(1000)
+save_game_to_csv(100)
