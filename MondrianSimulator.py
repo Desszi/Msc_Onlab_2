@@ -4,18 +4,23 @@ import random
 import numpy as np
 import random
 
+def convert(board):
+    new_board = [[str(value) for value in row] for row in board]
+    return new_board
 def create_random_board():
     rows = random.randint(6, 8)
     cols = random.randint(6, 8)
 
     matrix = [[random.choices([0, 1], weights=[0.75, 0.25])[0] for _ in range(cols)] for _ in range(rows)]
 
-    board = [list(map(int, row)) for row in matrix]
-    start_board = [row.copy() for row in board]
+    num_board = [list(map(int, row)) for row in matrix]
+    num_start_board = [row.copy() for row in num_board]
+
+    board = convert(num_board)
+    start_board = convert(num_start_board)
 
     board_name = f"board_{rows}_{cols}"
     return board_name, board, start_board
-
 
 """
 def load_board():
@@ -120,6 +125,7 @@ def strategy_order(selected_item_set):
 
 
 def place_items(selected_item_set, board, board_name):
+
     sorted_items = strategy_order(selected_item_set)
     def is_placed(x, y, item, placed):
         hidden_zeros = 0
@@ -208,8 +214,8 @@ def main():
     steps = place_items(selected_item_set, board, board_name)
 
     # Eredmény kiírása
-    #for row in start_board:
-    #    print(row)
+    # for row in start_board:
+    #   print(row)
 
     for row in board:
         print(row)
