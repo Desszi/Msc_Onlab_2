@@ -123,10 +123,34 @@ def strategy_order(selected_item_set):
     selected_item_set.sort(key=lambda x: len(''.join(x)), reverse=True)
     return selected_item_set
 
+#Egy széles elem legyen az első kiválasztáskor
+def oneWide_order(selected_item_set):
+    def is_one_wide(rect):
+        return all(len(row) == 1 for row in rect) or len(rect) == 1
+    def get_character(rect):
+        return rect[0][0] if len(rect) == 1 else rect[0]
+    def area_key(rect):
+        return len(''.join(rect))
 
+    # Kiválogatjuk az "egy széles" elemeket
+    one_width_selected_item_set = [rect for rect in selected_item_set if is_one_wide(rect)]
+    other_selected_item_set = [rect for rect in selected_item_set if not is_one_wide(rect)]
+
+    # Az "egy széles" elemek rendezése azonos karakter és terület szerint
+    one_width_selected_item_set.sort(key=lambda rect: (get_character(rect), -area_key(rect)))
+
+    # A többi elem rendezése terület szerint csökkenő sorrendben
+    other_selected_item_set.sort(key=area_key, reverse=True)
+
+    # Összefésüljük a két listát
+    ordered_selected_item_set = one_width_selected_item_set + other_selected_item_set
+    return ordered_selected_item_set
 def place_items(selected_item_set, board, board_name):
 
-    sorted_items = strategy_order(selected_item_set)
+    sorted_items = oneWide_order(selected_item_set)
+
+    for rect in sorted_items:
+        print("Ez egy rendezett elem:", rect)
     def is_placed(x, y, item, placed):
         hidden_zeros = 0
         for i in range(len(item)):
@@ -139,9 +163,16 @@ def place_items(selected_item_set, board, board_name):
                     hidden_zeros += 1
 
         # Ha az alakzat karaktere már szerepel az elhelyezett listában, akkor az alakzatot nem szabad elhelyezni
-        if any(char in placed for char in ''.join(item)):
-            return False, 0
-        return True, hidden_zeros
+        #if any(char in placed for char in ''.join(item)):
+        #    return False, 0
+        # return True, hidden_zeros
+        all_placed = len(is_placed_array) == len(
+            set(''.join([''.join(item) for item in selected_item_set]).replace('0', '')))
+
+        # Ellenőrizzük, hogy maradt-e '0' a táblán
+        any_zero_left = any('0' in row for row in board)
+
+        return steps, all_placed and not any_zero_left
 
     def take_place(x, y, item):
         for i in range(len(item)):
@@ -191,6 +222,8 @@ def print_board_csv(start_board, steps):
             file.write('\n')
 
 def main():
+    while True:
+        board_name, board, start_board = create_random_board()
     # Példa egy véletlenszerű méretű mátrix létrehozására
     board_name, board, start_board = create_random_board()
     print(f"Selected Board:")
@@ -211,17 +244,21 @@ def main():
         print("Nincs egyező elemkészlet.")
 
     # Futtatjuk a kódot
-    steps = place_items(selected_item_set, board, board_name)
+    steps, success = place_items(selected_item_set, board, board_name)
 
     # Eredmény kiírása
     # for row in start_board:
     #   print(row)
 
-    for row in board:
-        print(row)
-    print(f"Lerakási kísérletek száma: {steps}")
-
-    return start_board, steps
+    if success:
+        # Sikeres elhelyezés esetén kiírjuk az eredményt
+        for row in board:
+            print(row)
+        print(f"Lerakási kísérletek száma: {steps}")
+        return start_board, steps
+    else:
+        # Ha nem sikerült, új táblát generálunk
+        print("Új tábla generálása...")
 
 def save_game_to_csv(num_games):
     for _ in range(num_games):
@@ -229,4 +266,4 @@ def save_game_to_csv(num_games):
         print_board_csv(start_board, steps)
 
 # x játék létrehozása és CSV fájlba mentése
-save_game_to_csv(100)
+save_game_to_csv(1)
