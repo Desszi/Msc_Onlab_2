@@ -28,18 +28,18 @@ Szabályok:
 
 # Fejlesztés, specifikusabbá tétel
 1. Generálni 8x8-as, pontosan 1 megoldású pályákból (kezdetben) 300-at
-  a. Csak olyan legyen köztük, aminek pontosan egy megoldása van.
-  b. Ha nincs megoldása vagy több van, azt dobjuk ki (ha maradt még elem, amit nem tudunk lerakni, vagy több megoldás is van)
-  c. Tedd mellé, hogy a jelenlegi algoritmussal hány lépés
-  d. (Esetleg a 1-széles stratégiát is majd implementáld és azt is tedd mellé)
-  e. Tedd le mind a 300 adatot egy csv-be, ahol a 3 oszlop: pályaazonosító, lépés1, lépés2 (1-széles)
+   - Csak olyan legyen köztük, aminek pontosan egy megoldása van.
+   - Ha nincs megoldása vagy több van, azt dobjuk ki (ha maradt még elem, amit nem tudunk lerakni, vagy több megoldás is van)
+   - Tedd mellé, hogy a jelenlegi algoritmussal hány lépés
+   - (Esetleg a 1-széles stratégiát is majd implementáld és azt is tedd mellé)
+   - Tedd le mind a 300 adatot egy csv-be, ahol a 3 oszlop: pályaazonosító, lépés1, lépés2 (1-széles)
 2. Csak a lépés1 oszloppal dolgozva:
-  a. az első 200 pályával tanítsd be a hálót
-  b. a maradék 100 pályával pedig utána becsültesd meg a hálóval a lépésszámot,
-  c. az eredménnyel csinálj egy második csv fájlt 4 oszloppal (az új oszlop a hálóval becsült lépésszám)
+   - az első 200 pályával tanítsd be a hálót
+   - a maradék 100 pályával pedig utána becsültesd meg a hálóval a lépésszámot,
+   - az eredménnyel csinálj egy második csv fájlt 4 oszloppal (az új oszlop a hálóval becsült lépésszám)
 3. Értékelés:
-  a. lépés1 vs. becsült: mennyi az átlagos eltérés, szórás. Kérdés. hány pályával tanítsuk a hálót, hogy ez minél pontosabb legyen.
-  b. lépés2 vs becsült: ugyanígy (lehet, hogy ehhez a nagyobb tanítóhalmaz az optimális)
+   - lépés1 vs. becsült: mennyi az átlagos eltérés, szórás. Kérdés. hány pályával tanítsuk a hálót, hogy ez minél pontosabb legyen.
+   - lépés2 vs becsült: ugyanígy (lehet, hogy ehhez a nagyobb tanítóhalmaz az optimális)
 4. Egy meta-eredmény csv: 3 oszloppal: 1. oszlop a tanítóhalmaz mérete, 2. mennyi az átlagos eltérés, 3. mennyi a szórás (4., 5. olszop ugyanez, csak a lépés2  stratégiával) (matplotlibbel tudod vizualizálni)
 --
 
