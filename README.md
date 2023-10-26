@@ -26,7 +26,7 @@ Szabályok:
 3. Jupiter Notebookba kiírni a dolgokat leírásokkal úgy mint az Önlab 1-en
 4. Beadni a mesterséges intelligenciának az új, generált csv-t és megnézni, hogy az előző eredményekhez képest hogy becsülgeti a nehézségi szinteket
 
-# Fejlesztés, specifikusabá tétel
+# Fejlesztés, specifikusabbá tétel
 1. Generálni 8x8-as, pontosan 1 megoldású pályákból (kezdetben) 300-at
   a. Csak olyan legyen köztük, aminek pontosan egy megoldása van.
   b. Ha nincs megoldása vagy több van, azt dobjuk ki (ha maradt még elem, amit nem tudunk lerakni, vagy több megoldás is van)
