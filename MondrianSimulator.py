@@ -1,19 +1,34 @@
 import csv
 import os
-import random
 import numpy as np
 import random
 
 def convert(board):
     new_board = [[str(value) for value in row] for row in board]
     return new_board
+
+# 8x8 -as pályán : 1 hosszú, 2 hosszú, 3 hosszú
+# elég egyszer 300 cellára
+
 def create_random_board():
-    rows = random.randint(6, 8)
-    cols = random.randint(6, 8)
+    rows = 8
+    cols = 8
 
-    matrix = [[random.choices([0, 1], weights=[0.75, 0.25])[0] for _ in range(cols)] for _ in range(rows)]
+    num_board = [[0 for _ in range(cols)] for _ in range(rows)]
 
-    num_board = [list(map(int, row)) for row in matrix]
+    def place_element(element):
+        while True:
+            row = random.randint(0, rows - 1)
+            col = random.randint(0, cols - 1)
+            orientation = random.choice(['horizontal', 'vertical'])
+            if can_place_element(num_board, row, col, element, orientation):
+                place_element_at(num_board, row, col, element, orientation)
+                break
+
+    place_element(1)
+    place_element(2)
+    place_element(3)
+
     num_start_board = [row.copy() for row in num_board]
 
     board = convert(num_board)
@@ -21,6 +36,42 @@ def create_random_board():
 
     board_name = f"board_{rows}_{cols}"
     return board_name, board, start_board
+
+def can_place_element(board, row, col, element, orientation):
+    if element == 1:
+        return board[row][col] == 0
+    elif element == 2:
+        if orientation == 'horizontal' and col < len(board[0]) - 1:
+            return board[row][col] == 0 and board[row][col + 1] == 0
+        elif orientation == 'vertical' and row < len(board) - 1:
+            return board[row][col] == 0 and board[row + 1][col] == 0
+        else:
+            return False
+    elif element == 3:
+        if orientation == 'horizontal' and col < len(board[0]) - 2:
+            return all(board[row][c] == 0 for c in range(col, col + 3))
+        elif orientation == 'vertical' and row < len(board) - 2:
+            return all(board[r][col] == 0 for r in range(row, row + 3))
+        else:
+            return False
+
+def place_element_at(board, row, col, element, orientation):
+    if element == 1:
+        board[row][col] = 1
+    elif element == 2:
+        if orientation == 'horizontal':
+            board[row][col] = 1
+            board[row][col + 1] = 1
+        else:
+            board[row][col] = 1
+            board[row + 1][col] = 1
+    elif element == 3:
+        if orientation == 'horizontal':
+            for c in range(col, col + 3):
+                board[row][c] = 1
+        else:
+            for r in range(row, row + 3):
+                board[r][col] = 1
 
 """
 def load_board():
@@ -163,16 +214,16 @@ def place_items(selected_item_set, board, board_name):
                     hidden_zeros += 1
 
         # Ha az alakzat karaktere már szerepel az elhelyezett listában, akkor az alakzatot nem szabad elhelyezni
-        #if any(char in placed for char in ''.join(item)):
-        #    return False, 0
-        # return True, hidden_zeros
-        all_placed = len(is_placed_array) == len(
-            set(''.join([''.join(item) for item in selected_item_set]).replace('0', '')))
+        if any(char in placed for char in ''.join(item)):
+            return False, 0
+        return True, hidden_zeros
+        #all_placed = len(is_placed_array) == len(
+        #    set(''.join([''.join(item) for item in selected_item_set]).replace('0', '')))
 
         # Ellenőrizzük, hogy maradt-e '0' a táblán
-        any_zero_left = any('0' in row for row in board)
+        #any_zero_left = any('0' in row for row in board)
 
-        return steps, all_placed and not any_zero_left
+        #return steps, all_placed and not any_zero_left
 
     def take_place(x, y, item):
         for i in range(len(item)):
@@ -222,8 +273,8 @@ def print_board_csv(start_board, steps):
             file.write('\n')
 
 def main():
-    while True:
-        board_name, board, start_board = create_random_board()
+    #while True:
+    #    board_name, board, start_board = create_random_board()
     # Példa egy véletlenszerű méretű mátrix létrehozására
     board_name, board, start_board = create_random_board()
     print(f"Selected Board:")
@@ -244,21 +295,21 @@ def main():
         print("Nincs egyező elemkészlet.")
 
     # Futtatjuk a kódot
-    steps, success = place_items(selected_item_set, board, board_name)
+    steps = place_items(selected_item_set, board, board_name)
 
     # Eredmény kiírása
     # for row in start_board:
     #   print(row)
 
-    if success:
-        # Sikeres elhelyezés esetén kiírjuk az eredményt
-        for row in board:
-            print(row)
-        print(f"Lerakási kísérletek száma: {steps}")
-        return start_board, steps
-    else:
+   # if success:
+    # Sikeres elhelyezés esetén kiírjuk az eredményt
+    for row in board:
+      print(row)
+    print(f"Lerakási kísérletek száma: {steps}")
+    return start_board, steps
+    #else:
         # Ha nem sikerült, új táblát generálunk
-        print("Új tábla generálása...")
+    #    print("Új tábla generálása...")
 
 def save_game_to_csv(num_games):
     for _ in range(num_games):
