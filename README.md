@@ -5,6 +5,8 @@ A Mondrián játékhoz készül egy generátor/szimulátor Python nyelven, amit 
 Ehhez továbbiakban egy másik, Mondriánhoz hasonló játék fog tartozni, melynek játéklogikájához egy másikfajta AI megoldás fog tartozni, a Q tanulás módszere. 
 Ennek a játéknek a célja hogy egymásra rakott lapokkal, ahol a színek fedik egymást egy adott pályát ki lehessen rakni, a játékelemek megfelelő sorrendben való lerakásával.
 
+Fontos! A játékpályán egy 8x8-as pálya esetén a "fekete" elemek szám és területe adott: 1, 11, 111.
+
 Az ehhez készült Google Colab dokumentáció: https://colab.research.google.com/drive/1QAHusZCAtWDjCjri0B8Rcmyxx-T793Vo#scrollTo=sbckZG5I1orU
 
 # Feladat: Mondrián szimulátor
