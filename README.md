@@ -6,6 +6,7 @@ Ehhez továbbiakban egy másik, Mondriánhoz hasonló játék fog tartozni, mely
 Ennek a játéknek a célja hogy egymásra rakott lapokkal, ahol a színek fedik egymást egy adott pályát ki lehessen rakni, a játékelemek megfelelő sorrendben való lerakásával.
 
 Fontos! A játékpályán egy 8x8-as pálya esetén a "fekete" elemek szám és területe adott: 1, 11, 111.
+
 Új algoritmus: Az elemeket vegye a sorrend alapján sorrendben és tegye le amíg tudja. Ha egy elemet nem tudott lerakni, akkor az előző elemet vegye fel és csúsztassa el eggyel jobbra, vagy lefele. Ha ezután nem sikerül lerakni akkor az ezelőtti elemet is felvesszük és megcsináljuk ugyanezt. A lényeg: Az összes elem legyen lerakva a pályára.
 
 Az ehhez készült Google Colab dokumentáció: https://colab.research.google.com/drive/1QAHusZCAtWDjCjri0B8Rcmyxx-T793Vo#scrollTo=sbckZG5I1orU
