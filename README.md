@@ -5,6 +5,12 @@ A Mondrián játékhoz készül egy generátor/szimulátor Python nyelven, amit 
 Ehhez továbbiakban egy másik, Mondriánhoz hasonló játék fog tartozni, melynek játéklogikájához egy másikfajta AI megoldás fog tartozni, a Q tanulás módszere. 
 Ennek a játéknek a célja hogy egymásra rakott lapokkal, ahol a színek fedik egymást egy adott pályát ki lehessen rakni, a játékelemek megfelelő sorrendben való lerakásával.
 
+Fontos! A játékpályán egy 8x8-as pálya esetén a "fekete" elemek szám és területe adott: 1, 11, 111.
+
+Új algoritmus: Az elemeket vegye a sorrend alapján sorrendben és tegye le amíg tudja. Ha egy elemet nem tudott lerakni, akkor az előző elemet vegye fel és csúsztassa el eggyel jobbra, vagy lefele. Ha ezután nem sikerül lerakni akkor az ezelőtti elemet is felvesszük és megcsináljuk ugyanezt. A lényeg: Az összes elem legyen lerakva a pályára.
+
+Az ehhez készült Google Colab dokumentáció: https://colab.research.google.com/drive/1QAHusZCAtWDjCjri0B8Rcmyxx-T793Vo#scrollTo=sbckZG5I1orU
+
 # Feladat: Mondrián szimulátor
 
 Szabályok:
@@ -15,7 +21,7 @@ Szabályok:
  - A pályát akkor raktuk ki ha teljesen sikerült lefedni a megadott elemekkel, ha nem akkor annak a pályának nincs megoldása ebben az esetben a lehető legjobb megoldást rajzoljuk ki.
  - Kimenetként szeretnénk látni a kiválasztott pályát, amivel kezdődik a játék, utána egy már kirakott pályát, illetve hogy ezt hány lépésből sikerült kirakni.
  - A kimenet egy csv fájl lesz, amiből a mesterséges intelligencia megtanulhatja, hogy egy pálya milyen nehézségi szintű.
-
+   
 
 # Szépséghibák és Jupiter Notebook
 
@@ -23,3 +29,22 @@ Szabályok:
 2. Ha az adatok és a becsült lépésszámok nagyságrendileg megfelelnek a validált halmaznak, akkor le lehet venni az inputot és generáljuk a csv-be az adatot, lehessen megadni hogy mennyi kell
 3. Jupiter Notebookba kiírni a dolgokat leírásokkal úgy mint az Önlab 1-en
 4. Beadni a mesterséges intelligenciának az új, generált csv-t és megnézni, hogy az előző eredményekhez képest hogy becsülgeti a nehézségi szinteket
+
+# Fejlesztés, specifikusabbá tétel
+1. Generálni 8x8-as, pontosan 1 megoldású pályákból (kezdetben) 300-at
+   - Csak olyan legyen köztük, aminek pontosan egy megoldása van.
+   - Ha nincs megoldása vagy több van, azt dobjuk ki (ha maradt még elem, amit nem tudunk lerakni, vagy több megoldás is van)
+   - Tedd mellé, hogy a jelenlegi algoritmussal hány lépés
+   - (Esetleg a 1-széles stratégiát is majd implementáld és azt is tedd mellé)
+   - Tedd le mind a 300 adatot egy csv-be, ahol a 3 oszlop: pályaazonosító, lépés1, lépés2 (1-széles)
+2. Csak a lépés1 oszloppal dolgozva:
+   - az első 200 pályával tanítsd be a hálót
+   - a maradék 100 pályával pedig utána becsültesd meg a hálóval a lépésszámot,
+   - az eredménnyel csinálj egy második csv fájlt 4 oszloppal (az új oszlop a hálóval becsült lépésszám)
+3. Értékelés:
+   - lépés1 vs. becsült: mennyi az átlagos eltérés, szórás. Kérdés. hány pályával tanítsuk a hálót, hogy ez minél pontosabb legyen.
+   - lépés2 vs becsült: ugyanígy (lehet, hogy ehhez a nagyobb tanítóhalmaz az optimális)
+4. Egy meta-eredmény csv: 3 oszloppal: 1. oszlop a tanítóhalmaz mérete, 2. mennyi az átlagos eltérés, 3. mennyi a szórás (4., 5. olszop ugyanez, csak a lépés2  stratégiával) (matplotlibbel tudod vizualizálni)
+--
+
+játszhatsz nagyobb pályákkal is
