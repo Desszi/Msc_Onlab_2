@@ -1,31 +1,75 @@
-import csv
 import os
 import random
-import numpy as np
-import random
+
+def convert(board):
+    new_board = [[str(value) for value in row] for row in board]
+    return new_board
+
+# 8x8 -as pályán : 1 hosszú, 2 hosszú, 3 hosszú
+# elég egyszer 300 cellára
 
 def create_random_board():
-    rows = random.randint(6, 8)
-    cols = random.randint(6, 8)
+    rows = 7
+    cols = 7
 
-    matrix = [[random.choices([0, 1], weights=[0.75, 0.25])[0] for _ in range(cols)] for _ in range(rows)]
+    num_board = [[0 for _ in range(cols)] for _ in range(rows)]
 
-    # A board létrehozása a kívánt formátumban
-    board = [list(map(int, row)) for row in matrix]
+    def place_element(element):
+        while True:
+            row = random.randint(0, rows - 1)
+            col = random.randint(0, cols - 1)
+            orientation = random.choice(['horizontal', 'vertical'])
+            if can_place_element(num_board, row, col, element, orientation):
+                place_element_at(num_board, row, col, element, orientation)
+                break
 
-    # A start_board is a board másolata
-    start_board = [row.copy() for row in board]
+    place_element(1)
+    place_element(2)
+    place_element(3)
+
+    num_start_board = [row.copy() for row in num_board]
+
+    board = convert(num_board)
+    start_board = convert(num_start_board)
 
     board_name = f"board_{rows}_{cols}"
     return board_name, board, start_board
 
-# Függvény tesztelése
-# Példa egy véletlenszerű méretű mátrix létrehozására
-board_name, board, start_board = create_random_board()
-print(f"Selected Board:")
-for row in start_board:
-    print(row)
-print(f"Board Name: {board_name}")
+def can_place_element(board, row, col, element, orientation):
+    if element == 1:
+        return board[row][col] == 0
+    elif element == 2:
+        if orientation == 'horizontal' and col < len(board[0]) - 1:
+            return board[row][col] == 0 and board[row][col + 1] == 0
+        elif orientation == 'vertical' and row < len(board) - 1:
+            return board[row][col] == 0 and board[row + 1][col] == 0
+        else:
+            return False
+    elif element == 3:
+        if orientation == 'horizontal' and col < len(board[0]) - 2:
+            return all(board[row][c] == 0 for c in range(col, col + 3))
+        elif orientation == 'vertical' and row < len(board) - 2:
+            return all(board[r][col] == 0 for r in range(row, row + 3))
+        else:
+            return False
+
+def place_element_at(board, row, col, element, orientation):
+    if element == 1:
+        board[row][col] = 1
+    elif element == 2:
+        if orientation == 'horizontal':
+            board[row][col] = 1
+            board[row][col + 1] = 1
+        else:
+            board[row][col] = 1
+            board[row + 1][col] = 1
+    elif element == 3:
+        if orientation == 'horizontal':
+            for c in range(col, col + 3):
+                board[row][c] = 1
+        else:
+            for r in range(row, row + 3):
+                board[r][col] = 1
 
 """
 def load_board():
@@ -45,9 +89,6 @@ def load_board():
 
     return selected_board, board_name, board, start_board
 """
-# Tesztelés
-
-
 def load_items(board_name):
     # Elemkészlet keresése az "items" mappában, ami a megfelelő mintával kezdődik
     items_path = "input/elemek/"
@@ -124,17 +165,6 @@ def added_rotate(item_set):
 def remove_empty(item_set):
     return [item for item in item_set if item and len(item) > 0]
 
-# Formázás és tesztelés
-selected_item_set = load_items(board_name)
-selected_item_set = added_rotate(selected_item_set)
-selected_item_set = remove_empty(selected_item_set)
-selected_item_set.pop()
-if selected_item_set:
-    for item in selected_item_set:
-        # print('\n'.join(item))
-        print("Ez egy elem:", item)
-else:
-    print("Nincs egyező elemkészlet.")
 
 #Itt lehet majd felsorolni a stratégiákat, hogy milyen logika szerint szeretnénk letenni az elemeket
 def strategy_order(selected_item_set):
@@ -142,9 +172,34 @@ def strategy_order(selected_item_set):
     selected_item_set.sort(key=lambda x: len(''.join(x)), reverse=True)
     return selected_item_set
 
+#Egy széles elem legyen az első kiválasztáskor
+def oneWide_order(selected_item_set):
+    def is_one_wide(rect):
+        return all(len(row) == 1 for row in rect) or len(rect) == 1
+    def get_character(rect):
+        return rect[0][0] if len(rect) == 1 else rect[0]
+    def area_key(rect):
+        return len(''.join(rect))
 
-def place_items(selected_item_set, board):
+    # Kiválogatjuk az "egy széles" elemeket
+    one_width_selected_item_set = [rect for rect in selected_item_set if is_one_wide(rect)]
+    other_selected_item_set = [rect for rect in selected_item_set if not is_one_wide(rect)]
+
+    # Az "egy széles" elemek rendezése azonos karakter és terület szerint
+    one_width_selected_item_set.sort(key=lambda rect: (get_character(rect), -area_key(rect)))
+
+    # A többi elem rendezése terület szerint csökkenő sorrendben
+    other_selected_item_set.sort(key=area_key, reverse=True)
+
+    # Összefésüljük a két listát
+    ordered_selected_item_set = one_width_selected_item_set + other_selected_item_set
+    return ordered_selected_item_set
+def place_items(selected_item_set, board, board_name):
+
     sorted_items = strategy_order(selected_item_set)
+
+    for rect in sorted_items:
+        print("Ez egy rendezett elem:", rect)
     def is_placed(x, y, item, placed):
         hidden_zeros = 0
         for i in range(len(item)):
@@ -188,17 +243,6 @@ def place_items(selected_item_set, board):
 
     return steps
 
-# Futtatjuk a kódot
-steps = place_items(selected_item_set, board)
-
-# Eredmény kiírása
-#for row in start_board:
-#    print(row)
-
-for row in board:
-    print(row)
-print(f"Lerakási kísérletek száma: {steps}")
-
 
 #Itt majd ki fogjuk írni a kezdeti pályát a megoldást és a lépésszámot, amiból később a kezdeti pályát és a lépésszámot egy csv filebe fogjuk rakni
 
@@ -214,10 +258,50 @@ def print_board_csv(start_board, steps):
     with open(csv_fajl_nev, mode='a', newline='') as file:
         if os.path.exists(csv_fajl_nev):
             file.write('"')
-            file.write(',\n '.join(data))  # Sorokat idézőjelek között vesszővel elválasztva írjuk
+            file.write('\n'.join(data))  # Sorokat idézőjelek között vesszővel elválasztva írjuk
             file.write('",')
             file.write(str(steps))  # Lépésszám hozzáadása
             file.write('\n')
 
+def main():
+    board_name, board, start_board = create_random_board()
+    print(f"Selected Board:")
+    for row in start_board:
+        print(row)
+    print(f"Board Name: {board_name}")
 
-print_board_csv(start_board, steps)
+    # Formázás és tesztelés
+    selected_item_set = load_items(board_name)
+    selected_item_set = added_rotate(selected_item_set)
+    selected_item_set = remove_empty(selected_item_set)
+    selected_item_set.pop()
+    if selected_item_set:
+        for item in selected_item_set:
+            # print('\n'.join(item))
+            print("Ez egy elem:", item)
+    else:
+        print("Nincs egyező elemkészlet.")
+
+    # Futtatjuk a kódot
+    steps = place_items(selected_item_set, board, board_name)
+
+    # Eredmény kiírása
+    # for row in start_board:
+    #   print(row)
+
+    for row in board:
+      print(row)
+    print(f"Lerakási kísérletek száma: {steps}")
+    success = all(char != '0' for row in board for char in row)
+    return start_board, steps, success
+
+
+def save_game_to_csv(num_games):
+    for _ in range(num_games):
+        success = False
+        while not success:
+            start_board, steps, success = main()
+            success = print_board_csv(start_board, steps)
+
+# x játék létrehozása és CSV fájlba mentése
+save_game_to_csv(1)
