@@ -44,7 +44,7 @@ Szabályok:
 3. Értékelés:
    - lépés1 vs. becsült: mennyi az átlagos eltérés, szórás. Kérdés. hány pályával tanítsuk a hálót, hogy ez minél pontosabb legyen.
    - lépés2 vs becsült: ugyanígy (lehet, hogy ehhez a nagyobb tanítóhalmaz az optimális)
-4. #Egy meta-eredmény csv: 3 oszloppal: 1. oszlop a tanítóhalmaz mérete, 2. mennyi az átlagos eltérés, 3. mennyi a szórás (4., 5. olszop ugyanez, csak a lépés2  stratégiával) (matplotlibbel tudod vizualizálni)
+4. # Egy meta-eredmény csv: 3 oszloppal: 1. oszlop a tanítóhalmaz mérete, 2. mennyi az átlagos eltérés, 3. mennyi a szórás (4., 5. olszop ugyanez, csak a lépés2  stratégiával) (matplotlibbel tudod vizualizálni)
 --
 
 játszhatsz nagyobb pályákkal is
