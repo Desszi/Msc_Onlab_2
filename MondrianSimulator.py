@@ -282,13 +282,15 @@ def print_board_csv(start_board, steps):
             file.write('\n')
 
 def main():
+    #while True:
+    #    board_name, board, start_board = create_random_board()
+    # Példa egy véletlenszerű méretű mátrix létrehozására
     board_name, board, start_board = create_random_board()
 
     print(f"Selected Board:")
     for row in start_board:
         print(row)
     print(f"Board Name: {board_name}")
-
     # Formázás és tesztelés
     selected_item_set = load_items(board_name)
     selected_item_set = added_rotate(selected_item_set)
@@ -300,27 +302,23 @@ def main():
             print("Ez egy elem:", item)
     else:
         print("Nincs egyező elemkészlet.")
-
     # Futtatjuk a kódot
     steps = place_items(selected_item_set, board, board_name)
-
     # Eredmény kiírása
     # for row in start_board:
     #   print(row)
-
+   # if success:
+    # Sikeres elhelyezés esetén kiírjuk az eredményt
     for row in board:
       print(row)
     print(f"Lerakási kísérletek száma: {steps}")
-    success = all(char != '0' for row in board for char in row)
-    return start_board, steps, success
-
-
+    return start_board, steps
+    #else:
+        # Ha nem sikerült, új táblát generálunk
+    #    print("Új tábla generálása...")
 def save_game_to_csv(num_games):
     for _ in range(num_games):
-        success = False
-        while not success:
-            start_board, steps, success = main()
-            success = print_board_csv(start_board, steps)
-
+        start_board, steps = main()
+        print_board_csv(start_board, steps)
 # x játék létrehozása és CSV fájlba mentése
 save_game_to_csv(1)
