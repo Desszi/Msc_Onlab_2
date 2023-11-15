@@ -11,10 +11,12 @@ def convert(board):
 # elég egyszer 300 cellára
 
 def create_random_board():
-    rows = 8
-    cols = 8
+    rows = 7
+    cols = 7
 
     num_board = [[0 for _ in range(cols)] for _ in range(rows)]
+
+
 
     def place_element(element):
         while True:
@@ -30,6 +32,22 @@ def create_random_board():
     place_element(3)
 
     num_start_board = [row.copy() for row in num_board]
+
+    num_board = [[0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 1, 0, 0, 1],
+                   [0, 0, 0, 0, 0, 0, 1],
+                   [0, 0, 0, 0, 0, 0, 1],
+                   [0, 0, 0, 0, 0, 0, 1],
+                   [0, 0, 0, 0, 0, 0, 1]]
+
+    num_start_board = [[0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 1, 0, 0, 1],
+                   [0, 0, 0, 0, 0, 0, 1],
+                   [0, 0, 0, 0, 0, 0, 1],
+                   [0, 0, 0, 0, 0, 0, 1],
+                   [0, 0, 0, 0, 0, 0, 1]]
 
     board = convert(num_board)
     start_board = convert(num_start_board)
@@ -198,7 +216,7 @@ def oneWide_order(selected_item_set):
     return ordered_selected_item_set
 def place_items(selected_item_set, board, board_name):
 
-    sorted_items = oneWide_order(selected_item_set)
+    sorted_items = strategy_order(selected_item_set)
 
     for rect in sorted_items:
         print("Ez egy rendezett elem:", rect)
@@ -277,6 +295,7 @@ def main():
     #    board_name, board, start_board = create_random_board()
     # Példa egy véletlenszerű méretű mátrix létrehozására
     board_name, board, start_board = create_random_board()
+
     print(f"Selected Board:")
     for row in start_board:
         print(row)
