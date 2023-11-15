@@ -7,6 +7,8 @@ Ennek a játéknek a célja hogy egymásra rakott lapokkal, ahol a színek fedik
 
 Fontos! A játékpályán egy 8x8-as pálya esetén a "fekete" elemek szám és területe adott: 1, 11, 111.
 
+Új algoritmus: Az elemeket vegye a sorrend alapján sorrendben és tegye le amíg tudja. Ha egy elemet nem tudott lerakni, akkor az előző elemet vegye fel és csúsztassa el eggyel jobbra, vagy lefele. Ha ezután nem sikerül lerakni akkor az ezelőtti elemet is felvesszük és megcsináljuk ugyanezt. A lényeg: Az összes elem legyen lerakva a pályára.
+
 Az ehhez készült Google Colab dokumentáció: https://colab.research.google.com/drive/1QAHusZCAtWDjCjri0B8Rcmyxx-T793Vo#scrollTo=sbckZG5I1orU
 
 # Feladat: Mondrián szimulátor
@@ -42,7 +44,7 @@ Szabályok:
 3. Értékelés:
    - lépés1 vs. becsült: mennyi az átlagos eltérés, szórás. Kérdés. hány pályával tanítsuk a hálót, hogy ez minél pontosabb legyen.
    - lépés2 vs becsült: ugyanígy (lehet, hogy ehhez a nagyobb tanítóhalmaz az optimális)
-4. Egy meta-eredmény csv: 3 oszloppal: 1. oszlop a tanítóhalmaz mérete, 2. mennyi az átlagos eltérés, 3. mennyi a szórás (4., 5. olszop ugyanez, csak a lépés2  stratégiával) (matplotlibbel tudod vizualizálni)
+4. ### Egy meta-eredmény csv: 3 oszloppal: 1. oszlop a tanítóhalmaz mérete, 2. mennyi az átlagos eltérés, 3. mennyi a szórás (4., 5. olszop ugyanez, csak a lépés2  stratégiával) (matplotlibbel tudod vizualizálni)
 --
 
 játszhatsz nagyobb pályákkal is

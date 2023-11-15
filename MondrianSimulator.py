@@ -1,6 +1,4 @@
-import csv
 import os
-import numpy as np
 import random
 
 def convert(board):
@@ -235,13 +233,6 @@ def place_items(selected_item_set, board, board_name):
         if any(char in placed for char in ''.join(item)):
             return False, 0
         return True, hidden_zeros
-        #all_placed = len(is_placed_array) == len(
-        #    set(''.join([''.join(item) for item in selected_item_set]).replace('0', '')))
-
-        # Ellenőrizzük, hogy maradt-e '0' a táblán
-        #any_zero_left = any('0' in row for row in board)
-
-        #return steps, all_placed and not any_zero_left
 
     def take_place(x, y, item):
         for i in range(len(item)):
@@ -291,9 +282,6 @@ def print_board_csv(start_board, steps):
             file.write('\n')
 
 def main():
-    #while True:
-    #    board_name, board, start_board = create_random_board()
-    # Példa egy véletlenszerű méretű mátrix létrehozására
     board_name, board, start_board = create_random_board()
 
     print(f"Selected Board:")
@@ -320,20 +308,19 @@ def main():
     # for row in start_board:
     #   print(row)
 
-   # if success:
-    # Sikeres elhelyezés esetén kiírjuk az eredményt
     for row in board:
       print(row)
     print(f"Lerakási kísérletek száma: {steps}")
-    return start_board, steps
-    #else:
-        # Ha nem sikerült, új táblát generálunk
-    #    print("Új tábla generálása...")
+    success = all(char != '0' for row in board for char in row)
+    return start_board, steps, success
+
 
 def save_game_to_csv(num_games):
     for _ in range(num_games):
-        start_board, steps = main()
-        print_board_csv(start_board, steps)
+        success = False
+        while not success:
+            start_board, steps, success = main()
+            success = print_board_csv(start_board, steps)
 
 # x játék létrehozása és CSV fájlba mentése
 save_game_to_csv(1)
