@@ -1,20 +1,16 @@
 import os
 import random
+from itertools import product
 
 def convert(board):
     new_board = [[str(value) for value in row] for row in board]
     return new_board
 
-# 8x8 -as pályán : 1 hosszú, 2 hosszú, 3 hosszú
-# elég egyszer 300 cellára
-
 def create_random_board():
-    rows = 7
-    cols = 7
+    rows = 8
+    cols = 8
 
     num_board = [[0 for _ in range(cols)] for _ in range(rows)]
-
-
 
     def place_element(element):
         while True:
@@ -31,21 +27,23 @@ def create_random_board():
 
     num_start_board = [row.copy() for row in num_board]
 
-    num_board = [[0, 0, 0, 0, 0, 0, 0],
-                   [0, 0, 0, 0, 0, 0, 0],
-                   [0, 0, 0, 1, 0, 0, 1],
-                   [0, 0, 0, 0, 0, 0, 1],
-                   [0, 0, 0, 0, 0, 0, 1],
-                   [0, 0, 0, 0, 0, 0, 1],
-                   [0, 0, 0, 0, 0, 0, 1]]
+    num_board = [[0, 0, 0, 0, 0, 1, 1, 1],
+                   [0, 0, 0, 0, 0, 1, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 1, 1, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0]]
 
-    num_start_board = [[0, 0, 0, 0, 0, 0, 0],
-                   [0, 0, 0, 0, 0, 0, 0],
-                   [0, 0, 0, 1, 0, 0, 1],
-                   [0, 0, 0, 0, 0, 0, 1],
-                   [0, 0, 0, 0, 0, 0, 1],
-                   [0, 0, 0, 0, 0, 0, 1],
-                   [0, 0, 0, 0, 0, 0, 1]]
+    num_start_board = [[0, 0, 0, 0, 0, 1, 1, 1],
+                   [0, 0, 0, 0, 0, 1, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 1, 1, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0]]
 
     board = convert(num_board)
     start_board = convert(num_start_board)
@@ -212,64 +210,89 @@ def oneWide_order(selected_item_set):
     # Összefésüljük a két listát
     ordered_selected_item_set = one_width_selected_item_set + other_selected_item_set
     return ordered_selected_item_set
-def place_items(selected_item_set, board, board_name):
 
-    sorted_items = strategy_order(selected_item_set)
+def generate_combinations(selected_item_set):
+    selected_item_set = strategy_order(selected_item_set)
 
-    for rect in sorted_items:
-        print("Ez egy rendezett elem:", rect)
-    def is_placed(x, y, item, placed):
-        hidden_zeros = 0
-        for i in range(len(item)):
-            for j in range(len(item[i])):
-                # Ellenőrizzük az ütközéseket
-                if item[i][j] != '0' and (y + i >= len(board) or x + j >= len(board[0]) or board[y + i][x + j] != '0'):
-                    return False, 0
-                # Számoljuk az alakzat által takart '0' karaktereket
-                elif item[i][j] == '0' and board[y + i][x + j] == '0':
-                    hidden_zeros += 1
+    character_rows = {}
+    for row in selected_item_set:
+        character = row[0][0]
+        if character not in character_rows:
+            character_rows[character] = []
+        character_rows[character].append(row)
 
-        # Ha az alakzat karaktere már szerepel az elhelyezett listában, akkor az alakzatot nem szabad elhelyezni
-        if any(char in placed for char in ''.join(item)):
-            return False, 0
-        return True, hidden_zeros
+    combinations = product(*character_rows.values())
+    return list(combinations)
 
-    def take_place(x, y, item):
-        for i in range(len(item)):
-            for j in range(len(item[i])):
-                if item[i][j] != '0':
-                    board[y + i][x + j] = item[i][j]
+steps = 0
+def place_data_backtrack_corrected(selected_item_set, board):
+    global steps
+    def can_place(x, y, piece):
+        global steps
+        for i in range(len(piece)):
+            for j in range(len(piece[i])):
+                if piece[i][j] != '0':
+                    if (y + i >= len(board) or x + j >= len(board[0]) or
+                       board[y + i][x + j] != '0'):
+                        return False
+        return True
+    def place(x, y, piece):
+        global steps
+        for i in range(len(piece)):
+            for j in range(len(piece[i])):
+                if piece[i][j] != '0':
+                    board[y + i][x + j] = piece[i][j]
+                    #steps = steps + 1
 
-    is_placed_array = []
-    steps = 0
-    for item in sorted_items:
-        best_x = best_y = -1
-        most_zeros = -1
-        for y in range(len(board) - len(item) + 1):
-            for x in range(len(board[0]) - len(item[0]) + 1):
-                takeit, hidden_zeros = is_placed(x, y, item, is_placed_array)
-                steps += 1
-                if takeit and hidden_zeros > most_zeros:
-                    most_zeros = hidden_zeros
-                    best_x = x
-                    best_y = y
+    def remove(x, y, piece):
+        global steps
+        for i in range(len(piece)):
+            for j in range(len(piece[i])):
+                if piece[i][j] != '0':
+                    board[y + i][x + j] = '0'
+                    #steps = steps + 1
 
-        # Ha találtunk jó pozíciót az alakzathoz, akkor helyezzük el és jegyezzük meg az elhelyezett karaktereket
-        if best_x != -1 and best_y != -1:
-            take_place(best_x, best_y, item)
-            is_placed_array.extend([char for char in ''.join(item) if char != '0'])
+    def try_combination(index):
+        global steps
+        if index == len(selected_item_set):
+            return all('0' not in row for row in board)
+        piece = selected_item_set[index]
+        for y in range(len(board) - len(piece) + 1):
+            for x in range(len(board[0]) - len(piece[0]) + 1):
+                if can_place(x, y, piece):
+                    steps = steps + 1
+                    place(x, y, piece)
+                    if try_combination(index + 1):
+                        return True
+                    remove(x, y, piece)
+        return False
+    if try_combination(0):
+        return True, board, steps
+    else:
+        return False, board, steps
 
-    return steps
+def run_all_combinations(selected_item_set, board):
+    all_combinations = generate_combinations(selected_item_set)
+    successful_combinations_count = 0
+    for combination in all_combinations:
+        board_copy = [row[:] for row in board]
+        success, modified_board, steps = place_data_backtrack_corrected(list(combination), board_copy)
+        if success:
+            successful_combinations_count += 1
+            for row in modified_board:
+                print(' '.join(row))
 
-
-#Itt majd ki fogjuk írni a kezdeti pályát a megoldást és a lépésszámot, amiból később a kezdeti pályát és a lépésszámot egy csv filebe fogjuk rakni
+    if successful_combinations_count > 1:
+        print("There are multiple successful combinations, so the board cannot be uniquely solved.")
+    elif successful_combinations_count == 0:
+        print("No successful combination found.")
+    else:
+        print("Exactly one successful combination found.", "Steps:", steps)
 
 def print_board_csv(start_board, steps):
-    # CSV fájl neve
-    # CSV fájl neve
+
     csv_fajl_nev = 'board_game.csv'
 
-    # A játéktábla és lépésszám összefűzése egy listába
     data = [",".join(map(str, row)) for row in start_board]  # Sorok vesszővel választva
 
     # Az adatok írása a CSV fájlba
@@ -286,7 +309,6 @@ def main():
     #    board_name, board, start_board = create_random_board()
     # Példa egy véletlenszerű méretű mátrix létrehozására
     board_name, board, start_board = create_random_board()
-
     print(f"Selected Board:")
     for row in start_board:
         print(row)
@@ -302,23 +324,14 @@ def main():
             print("Ez egy elem:", item)
     else:
         print("Nincs egyező elemkészlet.")
-    # Futtatjuk a kódot
-    steps = place_items(selected_item_set, board, board_name)
-    # Eredmény kiírása
-    # for row in start_board:
-    #   print(row)
-   # if success:
-    # Sikeres elhelyezés esetén kiírjuk az eredményt
-    for row in board:
-      print(row)
-    print(f"Lerakási kísérletek száma: {steps}")
-    return start_board, steps
-    #else:
-        # Ha nem sikerült, új táblát generálunk
-    #    print("Új tábla generálása...")
+    run_all_combinations(selected_item_set, board)
+
+
 def save_game_to_csv(num_games):
-    for _ in range(num_games):
-        start_board, steps = main()
-        print_board_csv(start_board, steps)
+    main()
+   # for _ in range(num_games):
+       # start_board, steps = main()
+       # print_board_csv(start_board, steps)
+
 # x játék létrehozása és CSV fájlba mentése
 save_game_to_csv(1)
