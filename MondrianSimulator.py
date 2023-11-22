@@ -2,13 +2,14 @@ import os
 import random
 from itertools import product
 
+steps = 0
 def convert(board):
     new_board = [[str(value) for value in row] for row in board]
     return new_board
 
-def create_random_board():
-    rows = 8
-    cols = 8
+def create_random_board(board_size):
+    rows = board_size
+    cols = board_size
 
     num_board = [[0 for _ in range(cols)] for _ in range(rows)]
 
@@ -26,24 +27,6 @@ def create_random_board():
     place_element(3)
 
     num_start_board = [row.copy() for row in num_board]
-
-    num_board = [[0, 0, 0, 0, 0, 1, 1, 1],
-                   [0, 0, 0, 0, 0, 1, 0, 0],
-                   [0, 0, 0, 0, 0, 0, 0, 0],
-                   [0, 0, 1, 1, 0, 0, 0, 0],
-                   [0, 0, 0, 0, 0, 0, 0, 0],
-                   [0, 0, 0, 0, 0, 0, 0, 0],
-                   [0, 0, 0, 0, 0, 0, 0, 0],
-                   [0, 0, 0, 0, 0, 0, 0, 0]]
-
-    num_start_board = [[0, 0, 0, 0, 0, 1, 1, 1],
-                   [0, 0, 0, 0, 0, 1, 0, 0],
-                   [0, 0, 0, 0, 0, 0, 0, 0],
-                   [0, 0, 1, 1, 0, 0, 0, 0],
-                   [0, 0, 0, 0, 0, 0, 0, 0],
-                   [0, 0, 0, 0, 0, 0, 0, 0],
-                   [0, 0, 0, 0, 0, 0, 0, 0],
-                   [0, 0, 0, 0, 0, 0, 0, 0]]
 
     board = convert(num_board)
     start_board = convert(num_start_board)
@@ -124,7 +107,6 @@ def load_items(board_name):
         item_set_name = random.choice(matching_items)
     else:
         item_set_name = None
-    print(item_set_name)
 
     if item_set_name:
         with open(os.path.join(items_path, item_set_name), "r") as f:
@@ -224,11 +206,9 @@ def generate_combinations(selected_item_set):
     combinations = product(*character_rows.values())
     return list(combinations)
 
-steps = 0
 def place_data_backtrack_corrected(selected_item_set, board):
-    global steps
+
     def can_place(x, y, piece):
-        global steps
         for i in range(len(piece)):
             for j in range(len(piece[i])):
                 if piece[i][j] != '0':
@@ -237,46 +217,44 @@ def place_data_backtrack_corrected(selected_item_set, board):
                         return False
         return True
     def place(x, y, piece):
-        global steps
         for i in range(len(piece)):
             for j in range(len(piece[i])):
                 if piece[i][j] != '0':
                     board[y + i][x + j] = piece[i][j]
-                    #steps = steps + 1
 
     def remove(x, y, piece):
-        global steps
         for i in range(len(piece)):
             for j in range(len(piece[i])):
                 if piece[i][j] != '0':
                     board[y + i][x + j] = '0'
-                    #steps = steps + 1
 
     def try_combination(index):
-        global steps
         if index == len(selected_item_set):
             return all('0' not in row for row in board)
         piece = selected_item_set[index]
         for y in range(len(board) - len(piece) + 1):
             for x in range(len(board[0]) - len(piece[0]) + 1):
                 if can_place(x, y, piece):
-                    steps = steps + 1
                     place(x, y, piece)
+                    global steps
+                    steps = steps + 1
                     if try_combination(index + 1):
                         return True
                     remove(x, y, piece)
+                    steps = steps - 1
         return False
+
     if try_combination(0):
-        return True, board, steps
+        return True, board
     else:
-        return False, board, steps
+        return False, board
 
 def run_all_combinations(selected_item_set, board):
     all_combinations = generate_combinations(selected_item_set)
     successful_combinations_count = 0
     for combination in all_combinations:
         board_copy = [row[:] for row in board]
-        success, modified_board, steps = place_data_backtrack_corrected(list(combination), board_copy)
+        success, modified_board = place_data_backtrack_corrected(list(combination), board_copy)
         if success:
             successful_combinations_count += 1
             for row in modified_board:
@@ -288,13 +266,13 @@ def run_all_combinations(selected_item_set, board):
         print("No successful combination found.")
     else:
         print("Exactly one successful combination found.", "Steps:", steps)
+    return successful_combinations_count
 
-def print_board_csv(start_board, steps):
+def print_board_csv(start_board):
 
     csv_fajl_nev = 'board_game.csv'
-
     data = [",".join(map(str, row)) for row in start_board]  # Sorok vesszővel választva
-
+    global steps
     # Az adatok írása a CSV fájlba
     with open(csv_fajl_nev, mode='a', newline='') as file:
         if os.path.exists(csv_fajl_nev):
@@ -304,34 +282,30 @@ def print_board_csv(start_board, steps):
             file.write(str(steps))  # Lépésszám hozzáadása
             file.write('\n')
 
-def main():
-    #while True:
-    #    board_name, board, start_board = create_random_board()
-    # Példa egy véletlenszerű méretű mátrix létrehozására
-    board_name, board, start_board = create_random_board()
-    print(f"Selected Board:")
-    for row in start_board:
-        print(row)
-    print(f"Board Name: {board_name}")
+def main(board_size):
+    board_name, board, start_board = create_random_board(board_size)
+    #print(f"Selected Board:")
+    #for row in start_board:
+    #    print(row)
+    #print(f"Board Name: {board_name}")
     # Formázás és tesztelés
     selected_item_set = load_items(board_name)
     selected_item_set = added_rotate(selected_item_set)
     selected_item_set = remove_empty(selected_item_set)
     selected_item_set.pop()
-    if selected_item_set:
-        for item in selected_item_set:
-            # print('\n'.join(item))
-            print("Ez egy elem:", item)
-    else:
-        print("Nincs egyező elemkészlet.")
-    run_all_combinations(selected_item_set, board)
+    successful_combinations_count = run_all_combinations(selected_item_set, board)
+    return successful_combinations_count, start_board
 
 
 def save_game_to_csv(num_games):
-    main()
-   # for _ in range(num_games):
-       # start_board, steps = main()
-       # print_board_csv(start_board, steps)
+    counter = 0
+    while (counter < num_games):
+        successful_combinations_count, start_board = main(8)
+        if (successful_combinations_count == 1):
+            print_board_csv(start_board)
+            global steps
+            steps = 0
+            counter = counter + 1
 
 # x játék létrehozása és CSV fájlba mentése
-save_game_to_csv(1)
+save_game_to_csv(300)
