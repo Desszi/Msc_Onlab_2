@@ -13,6 +13,17 @@ def create_random_board(board_size):
 
     num_board = [[0 for _ in range(cols)] for _ in range(rows)]
 
+    """
+     num_board = [[0, 0, 0, 0, 0, 0, 0, 1],
+                           [0, 0, 1, 0, 1, 0, 0, 0],
+                           [0, 0, 1, 0, 1, 0, 0, 0],
+                           [0, 0, 1, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0]]
+    """
+
     def place_element(element):
         while True:
             row = random.randint(0, rows - 1)
@@ -27,6 +38,17 @@ def create_random_board(board_size):
     place_element(3)
 
     num_start_board = [row.copy() for row in num_board]
+
+    """
+     num_start_board = [[0, 0, 0, 0, 0, 0, 0, 1],
+                           [0, 0, 1, 0, 1, 0, 0, 0],
+                           [0, 0, 1, 0, 1, 0, 0, 0],
+                           [0, 0, 1, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0]]
+    """
 
     board = convert(num_board)
     start_board = convert(num_start_board)
@@ -284,15 +306,20 @@ def print_board_csv(start_board):
 
 def main(board_size):
     board_name, board, start_board = create_random_board(board_size)
-    #print(f"Selected Board:")
-    #for row in start_board:
-    #    print(row)
+    print(f"Selected Board:")
+    for row in start_board:
+        print(row)
     #print(f"Board Name: {board_name}")
+
     # Formázás és tesztelés
     selected_item_set = load_items(board_name)
     selected_item_set = added_rotate(selected_item_set)
     selected_item_set = remove_empty(selected_item_set)
     selected_item_set.pop()
+
+    for row in selected_item_set:
+        print(row)
+
     successful_combinations_count = run_all_combinations(selected_item_set, board)
     return successful_combinations_count, start_board
 
@@ -308,4 +335,4 @@ def save_game_to_csv(num_games):
             counter = counter + 1
 
 # x játék létrehozása és CSV fájlba mentése
-save_game_to_csv(300)
+save_game_to_csv(1)
