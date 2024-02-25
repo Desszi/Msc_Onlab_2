@@ -2,7 +2,8 @@ import os
 import random
 from itertools import product
 
-steps = 0
+g_steps = 0
+g_steps_suc = 0
 def convert(board):
     new_board = [[str(value) for value in row] for row in board]
     return new_board
@@ -11,20 +12,20 @@ def create_random_board(board_size):
     rows = board_size
     cols = board_size
 
-    num_board = [[0 for _ in range(cols)] for _ in range(rows)]
+    # num_board = [[0 for _ in range(cols)] for _ in range(rows)]
+
+    num_board = [[0,0,0,0,0,0,0,1],
+                 [0,0,1,0,1,0,0,0],
+                 [0,0,1,0,1,0,0,0],
+                 [0,0,1,0,0,0,0,0],
+                 [0,0,0,0,0,0,0,0],
+                 [0,0,0,0,0,0,0,0],
+                 [0,0,0,0,0,0,0,0],
+                 [0,0,0,0,0,0,0,0]]
 
     """
-     num_board = [[0, 0, 0, 0, 0, 0, 0, 1],
-                           [0, 0, 1, 0, 1, 0, 0, 0],
-                           [0, 0, 1, 0, 1, 0, 0, 0],
-                           [0, 0, 1, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0]]
-    """
-
-    def place_element(element):
+    
+        def place_element(element):
         while True:
             row = random.randint(0, rows - 1)
             col = random.randint(0, cols - 1)
@@ -36,19 +37,14 @@ def create_random_board(board_size):
     place_element(1)
     place_element(2)
     place_element(3)
-
-    num_start_board = [row.copy() for row in num_board]
-
+    
     """
-     num_start_board = [[0, 0, 0, 0, 0, 0, 0, 1],
-                           [0, 0, 1, 0, 1, 0, 0, 0],
-                           [0, 0, 1, 0, 1, 0, 0, 0],
-                           [0, 0, 1, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0]]
-    """
+
+
+    # num_start_board = [row.copy() for row in num_board]
+
+
+    num_start_board = num_board
 
     board = convert(num_board)
     start_board = convert(num_start_board)
@@ -206,7 +202,7 @@ def oneWide_order(selected_item_set):
     other_selected_item_set = [rect for rect in selected_item_set if not is_one_wide(rect)]
 
     # Az "egy széles" elemek rendezése azonos karakter és terület szerint
-    one_width_selected_item_set.sort(key=lambda rect: (get_character(rect), -area_key(rect)))
+    one_width_selected_item_set.sort(key=lambda rect: (get_character(rect), area_key(rect)))
 
     # A többi elem rendezése terület szerint csökkenő sorrendben
     other_selected_item_set.sort(key=area_key, reverse=True)
@@ -215,21 +211,10 @@ def oneWide_order(selected_item_set):
     ordered_selected_item_set = one_width_selected_item_set + other_selected_item_set
     return ordered_selected_item_set
 
-def generate_combinations(selected_item_set):
-    selected_item_set = strategy_order(selected_item_set)
-
-    character_rows = {}
-    for row in selected_item_set:
-        character = row[0][0]
-        if character not in character_rows:
-            character_rows[character] = []
-        character_rows[character].append(row)
-
-    combinations = product(*character_rows.values())
-    return list(combinations)
+l_steps = 0
 
 def place_data_backtrack_corrected(selected_item_set, board):
-
+    global l_steps
     def can_place(x, y, piece):
         for i in range(len(piece)):
             for j in range(len(piece[i])):
@@ -239,10 +224,12 @@ def place_data_backtrack_corrected(selected_item_set, board):
                         return False
         return True
     def place(x, y, piece):
+        global l_steps
         for i in range(len(piece)):
             for j in range(len(piece[i])):
                 if piece[i][j] != '0':
                     board[y + i][x + j] = piece[i][j]
+        l_steps += 1
 
     def remove(x, y, piece):
         for i in range(len(piece)):
@@ -253,32 +240,60 @@ def place_data_backtrack_corrected(selected_item_set, board):
     def try_combination(index):
         if index == len(selected_item_set):
             return all('0' not in row for row in board)
+
         piece = selected_item_set[index]
         for y in range(len(board) - len(piece) + 1):
             for x in range(len(board[0]) - len(piece[0]) + 1):
                 if can_place(x, y, piece):
                     place(x, y, piece)
-                    global steps
-                    steps = steps + 1
                     if try_combination(index + 1):
                         return True
                     remove(x, y, piece)
-                    steps = steps - 1
         return False
 
     if try_combination(0):
-        return True, board
+        return True, board, l_steps
     else:
-        return False, board
+        return False, board, l_steps
 
+def group_by_character(selected_item_set):
+    selected_item_set = strategy_order(selected_item_set)
+    grouped = []
+    i = 0
+    while i < len(selected_item_set):
+        if i + 1 < len(selected_item_set) and selected_item_set[i][0][0] == selected_item_set[i + 1][0][0]:
+            grouped.append([selected_item_set[i], selected_item_set[i + 1]])  # Itt a csoportok listák listájaként vannak tárolva
+            i += 2
+        else:
+            grouped.append([selected_item_set[i]])  # Egy elemű csoport is listaként van tárolva
+            i += 1
+    return grouped
+
+global combi_num
+combi_num = 0
+global g_combi_num
+g_combi_num = 0
 def run_all_combinations(selected_item_set, board):
-    all_combinations = generate_combinations(selected_item_set)
+    all_combinations = [list(map(list, reversed(combination))) for combination in
+                        list(product(*reversed(group_by_character(selected_item_set))))]
     successful_combinations_count = 0
     for combination in all_combinations:
         board_copy = [row[:] for row in board]
-        success, modified_board = place_data_backtrack_corrected(list(combination), board_copy)
+        #global l_steps
+        #l_steps = 0
+        success, modified_board, l_steps = place_data_backtrack_corrected(list(combination), board_copy)
+        print(f"Combination: {combination}")
+        global combi_num
+        combi_num += 1
+        print(l_steps)
         if success:
             successful_combinations_count += 1
+            global  g_steps_suc
+            if g_steps_suc == 0:
+                g_steps = l_steps
+                global g_combi_num
+                g_combi_num = combi_num
+                g_steps_suc = 1
             for row in modified_board:
                 print(' '.join(row))
 
@@ -287,21 +302,20 @@ def run_all_combinations(selected_item_set, board):
     elif successful_combinations_count == 0:
         print("No successful combination found.")
     else:
-        print("Exactly one successful combination found.", "Steps:", steps)
+        print("Exactly one successful combination found.",  "Combination: ",g_combi_num, "Steps: ", g_steps )
     return successful_combinations_count
 
 def print_board_csv(start_board):
 
     csv_fajl_nev = 'board_game.csv'
     data = [",".join(map(str, row)) for row in start_board]  # Sorok vesszővel választva
-    global steps
     # Az adatok írása a CSV fájlba
     with open(csv_fajl_nev, mode='a', newline='') as file:
         if os.path.exists(csv_fajl_nev):
             file.write('"')
             file.write('\n'.join(data))  # Sorokat idézőjelek között vesszővel elválasztva írjuk
             file.write('",')
-            file.write(str(steps))  # Lépésszám hozzáadása
+            file.write(str(g_steps))  # Lépésszám hozzáadása
             file.write('\n')
 
 def main(board_size):
@@ -330,8 +344,8 @@ def save_game_to_csv(num_games):
         successful_combinations_count, start_board = main(8)
         if (successful_combinations_count == 1):
             print_board_csv(start_board)
-            global steps
-            steps = 0
+            global g_steps
+            g_steps = 0
             counter = counter + 1
 
 # x játék létrehozása és CSV fájlba mentése
