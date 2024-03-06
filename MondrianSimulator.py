@@ -2,8 +2,14 @@ import os
 import random
 from itertools import product
 
+global g_steps
 g_steps = 0
-g_steps_suc = 0
+
+global g_steps_suc
+g_steps_suc  = 0
+
+global l_steps
+l_steps = 0
 def convert(board):
     new_board = [[str(value) for value in row] for row in board]
     return new_board
@@ -12,20 +18,19 @@ def create_random_board(board_size):
     rows = board_size
     cols = board_size
 
-    # num_board = [[0 for _ in range(cols)] for _ in range(rows)]
+    num_board = [[0 for _ in range(cols)] for _ in range(rows)]
 
-    num_board = [[0,0,0,0,0,0,0,1],
-                 [0,0,1,0,1,0,0,0],
-                 [0,0,1,0,1,0,0,0],
-                 [0,0,1,0,0,0,0,0],
+    """num_board = [[0,0,0,0,0,0,0,0],
+                 [0,0,0,0,0,0,0,0],
+                 [0,0,1,1,1,0,0,0],
                  [0,0,0,0,0,0,0,0],
                  [0,0,0,0,0,0,0,0],
                  [0,0,0,0,0,0,0,0],
-                 [0,0,0,0,0,0,0,0]]
-
+                 [0,0,0,0,1,0,0,0],
+                 [0,1,0,0,1,0,0,0]]
     """
     
-        def place_element(element):
+    def place_element(element):
         while True:
             row = random.randint(0, rows - 1)
             col = random.randint(0, cols - 1)
@@ -37,12 +42,8 @@ def create_random_board(board_size):
     place_element(1)
     place_element(2)
     place_element(3)
-    
-    """
 
-
-    # num_start_board = [row.copy() for row in num_board]
-
+   # num_start_board = [row.copy() for row in num_board]
 
     num_start_board = num_board
 
@@ -211,7 +212,7 @@ def oneWide_order(selected_item_set):
     ordered_selected_item_set = one_width_selected_item_set + other_selected_item_set
     return ordered_selected_item_set
 
-l_steps = 0
+
 
 def place_data_backtrack_corrected(selected_item_set, board):
     global l_steps
@@ -282,14 +283,14 @@ def run_all_combinations(selected_item_set, board):
         #global l_steps
         #l_steps = 0
         success, modified_board, l_steps = place_data_backtrack_corrected(list(combination), board_copy)
-        print(f"Combination: {combination}")
+        #print(f"Combination: {combination}")
         global combi_num
         combi_num += 1
-        print(l_steps)
         if success:
             successful_combinations_count += 1
-            global  g_steps_suc
+            global g_steps_suc
             if g_steps_suc == 0:
+                global g_steps
                 g_steps = l_steps
                 global g_combi_num
                 g_combi_num = combi_num
@@ -320,9 +321,9 @@ def print_board_csv(start_board):
 
 def main(board_size):
     board_name, board, start_board = create_random_board(board_size)
-    print(f"Selected Board:")
-    for row in start_board:
-        print(row)
+   # print(f"Selected Board:")
+   # for row in start_board:
+   #     print(row)
     #print(f"Board Name: {board_name}")
 
     # Formázás és tesztelés
@@ -331,12 +332,11 @@ def main(board_size):
     selected_item_set = remove_empty(selected_item_set)
     selected_item_set.pop()
 
-    for row in selected_item_set:
-        print(row)
+    #for row in selected_item_set:
+    #    print(row)
 
     successful_combinations_count = run_all_combinations(selected_item_set, board)
     return successful_combinations_count, start_board
-
 
 def save_game_to_csv(num_games):
     counter = 0
@@ -346,7 +346,11 @@ def save_game_to_csv(num_games):
             print_board_csv(start_board)
             global g_steps
             g_steps = 0
+            global g_steps_suc
+            g_steps_suc = 0
+            global l_steps
+            l_steps = 0
             counter = counter + 1
 
 # x játék létrehozása és CSV fájlba mentése
-save_game_to_csv(1)
+save_game_to_csv(290)
