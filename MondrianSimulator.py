@@ -1,15 +1,14 @@
+import csv
 import os
 import random
 from itertools import product
 
-global g_steps
-g_steps = 0
+global steps
+steps = 0
 
-global g_steps_suc
-g_steps_suc  = 0
+global steps_2
+steps_2 = 0
 
-global l_steps
-l_steps = 0
 def convert(board):
     new_board = [[str(value) for value in row] for row in board]
     return new_board
@@ -20,16 +19,6 @@ def create_random_board(board_size):
 
     num_board = [[0 for _ in range(cols)] for _ in range(rows)]
 
-    """num_board = [[0,0,0,0,0,0,0,0],
-                 [0,0,0,0,0,0,0,0],
-                 [0,0,1,1,1,0,0,0],
-                 [0,0,0,0,0,0,0,0],
-                 [0,0,0,0,0,0,0,0],
-                 [0,0,0,0,0,0,0,0],
-                 [0,0,0,0,1,0,0,0],
-                 [0,1,0,0,1,0,0,0]]
-    """
-    
     def place_element(element):
         while True:
             row = random.randint(0, rows - 1)
@@ -43,9 +32,7 @@ def create_random_board(board_size):
     place_element(2)
     place_element(3)
 
-   # num_start_board = [row.copy() for row in num_board]
-
-    num_start_board = num_board
+    num_start_board = [row.copy() for row in num_board]
 
     board = convert(num_board)
     start_board = convert(num_start_board)
@@ -107,6 +94,20 @@ def load_board():
 
     return selected_board, board_name, board, start_board
 """
+
+def load_boards_from_csv(input_csv, rows=8):
+    with open(input_csv, 'r') as f:
+        board = []
+        for line in f:
+            if line.strip():  # Non-empty line
+                board.append(line.strip().strip('"').split(','))
+                if len(board) == rows:
+                    yield board
+                    board = []
+        if board:
+            yield board
+
+
 def load_items(board_name):
     # Elemkészlet keresése az "items" mappában, ami a megfelelő mintával kezdődik
     items_path = "input/elemek/"
@@ -190,32 +191,84 @@ def strategy_order(selected_item_set):
     return selected_item_set
 
 #Egy széles elem legyen az első kiválasztáskor
-def oneWide_order(selected_item_set):
-    def is_one_wide(rect):
-        return all(len(row) == 1 for row in rect) or len(rect) == 1
-    def get_character(rect):
-        return rect[0][0] if len(rect) == 1 else rect[0]
-    def area_key(rect):
-        return len(''.join(rect))
+def generate_unique_id(piece):
+    # Generáljunk egy egyedi azonosítót az elemhez, beleértve a forgatás állapotát is
+    piece_string = ''.join(''.join(row) for row in piece)
+    return hash(piece_string)
 
-    # Kiválogatjuk az "egy széles" elemeket
-    one_width_selected_item_set = [rect for rect in selected_item_set if is_one_wide(rect)]
-    other_selected_item_set = [rect for rect in selected_item_set if not is_one_wide(rect)]
+def oneWide_order(selected_item_set, board):
+    def is_one_wide(piece):
+        return all(len(row) == 1 for row in piece) or len(piece) == 1
 
-    # Az "egy széles" elemek rendezése azonos karakter és terület szerint
-    one_width_selected_item_set.sort(key=lambda rect: (get_character(rect), area_key(rect)))
+    one_width_items = [piece for piece in selected_item_set if is_one_wide(piece)]
+    other_items = [piece for piece in selected_item_set if not is_one_wide(piece)]
 
-    # A többi elem rendezése terület szerint csökkenő sorrendben
-    other_selected_item_set.sort(key=area_key, reverse=True)
+    one_width_items.sort(key=lambda piece: (-len(piece) if len(piece) == 1 else -len(piece[0])))
+    other_items.sort(key=lambda piece: (-len(''.join(piece)), piece))
 
-    # Összefésüljük a két listát
-    ordered_selected_item_set = one_width_selected_item_set + other_selected_item_set
-    return ordered_selected_item_set
+    placed_items = set()  # Egyedi azonosítók halmaza az elhelyezett elemekhez
 
+    # Elhelyezési logika a forgatások kezelésével
+    def attempt_to_place_items(item_list):
+        for piece in item_list:
+            piece_id = generate_unique_id(piece)
+            if piece_id in placed_items:
+                continue
+            placed = False
+            for y in range(len(board)):
+                for x in range(len(board[0])):
+                    if can_place(x, y, piece, board):
+                        place(x, y, piece, board)
+                        placed_items.add(piece_id)
+                        placed = True
+                        break
+                if placed:
+                    break
 
+    # Próbáljuk meg elhelyezni az egy széles és egyéb elemeket
+    attempt_to_place_items(one_width_items)
+    attempt_to_place_items(other_items)
+
+    return selected_item_set
+
+def can_place(x, y, piece, board):
+    for i in range(len(piece)):
+        if y + i >= len(board):
+            return False
+        for j in range(len(piece[i])):
+            if x + j >= len(board[0]) or (piece[i][j] != '0' and board[y + i][x + j] != '0'):
+                return False
+    return True
+
+def place(x, y, piece, board):
+    for i in range(len(piece)):
+        for j in range(len(piece[i])):
+            if piece[i][j] != '0':
+                board[y + i][x + j] = piece[i][j]
+
+def remove(x, y, piece, board):
+    for i in range(len(piece)):
+        for j in range(len(piece[i])):
+            if piece[i][j] != '0':
+                board[y + i][x + j] = '0'
+
+# Itt integrálhatod az új logikát a meglévő main függvényedbe vagy egyéb helyen, ahol az elemek elhelyezését kezeled.
+
+def group_by_character(data):
+    data = strategy_order(data)
+    grouped = []
+    i = 0
+    while i < len(data):
+        if i + 1 < len(data) and data[i][0][0] == data[i + 1][0][0]:
+            grouped.append([data[i], data[i + 1]])
+            i += 2
+        else:
+            grouped.append([data[i]])
+            i += 1
+    return grouped
 
 def place_data_backtrack_corrected(selected_item_set, board):
-    global l_steps
+    global steps
     def can_place(x, y, piece):
         for i in range(len(piece)):
             for j in range(len(piece[i])):
@@ -225,12 +278,10 @@ def place_data_backtrack_corrected(selected_item_set, board):
                         return False
         return True
     def place(x, y, piece):
-        global l_steps
         for i in range(len(piece)):
             for j in range(len(piece[i])):
                 if piece[i][j] != '0':
                     board[y + i][x + j] = piece[i][j]
-        l_steps += 1
 
     def remove(x, y, piece):
         for i in range(len(piece)):
@@ -239,6 +290,9 @@ def place_data_backtrack_corrected(selected_item_set, board):
                     board[y + i][x + j] = '0'
 
     def try_combination(index):
+        global steps_2
+        global steps
+        steps += 1
         if index == len(selected_item_set):
             return all('0' not in row for row in board)
 
@@ -247,54 +301,39 @@ def place_data_backtrack_corrected(selected_item_set, board):
             for x in range(len(board[0]) - len(piece[0]) + 1):
                 if can_place(x, y, piece):
                     place(x, y, piece)
+                    global steps_2
+                    steps_2 = steps_2 + 1
                     if try_combination(index + 1):
                         return True
                     remove(x, y, piece)
+                    steps_2 = steps_2 - 1
         return False
 
     if try_combination(0):
-        return True, board, l_steps
+        return True, board, steps
     else:
-        return False, board, l_steps
+        return False, board, steps
 
-def group_by_character(selected_item_set):
-    selected_item_set = strategy_order(selected_item_set)
-    grouped = []
-    i = 0
-    while i < len(selected_item_set):
-        if i + 1 < len(selected_item_set) and selected_item_set[i][0][0] == selected_item_set[i + 1][0][0]:
-            grouped.append([selected_item_set[i], selected_item_set[i + 1]])  # Itt a csoportok listák listájaként vannak tárolva
-            i += 2
-        else:
-            grouped.append([selected_item_set[i]])  # Egy elemű csoport is listaként van tárolva
-            i += 1
-    return grouped
-
-global combi_num
-combi_num = 0
-global g_combi_num
-g_combi_num = 0
-def run_all_combinations(selected_item_set, board):
-    all_combinations = [list(map(list, reversed(combination))) for combination in
-                        list(product(*reversed(group_by_character(selected_item_set))))]
+global actual_steps
+actual_steps = 0
+def run_all_combinations(data, board):
+    all_combinations = [list(map(list, reversed(combination))) for combination in list(product(*reversed(group_by_character(data))))]
     successful_combinations_count = 0
+    global steps
+    steps = 0
+    global actual_steps
+    actual_steps = 0
     for combination in all_combinations:
         board_copy = [row[:] for row in board]
-        #global l_steps
-        #l_steps = 0
-        success, modified_board, l_steps = place_data_backtrack_corrected(list(combination), board_copy)
         #print(f"Combination: {combination}")
-        global combi_num
-        combi_num += 1
+        success, modified_board, steps = place_data_backtrack_corrected(list(combination), board_copy)
+        #print(f"Modified board:")
+        #for row in modified_board:
+        #    print(row)
+
         if success:
+            actual_steps = steps
             successful_combinations_count += 1
-            global g_steps_suc
-            if g_steps_suc == 0:
-                global g_steps
-                g_steps = l_steps
-                global g_combi_num
-                g_combi_num = combi_num
-                g_steps_suc = 1
             for row in modified_board:
                 print(' '.join(row))
 
@@ -303,54 +342,80 @@ def run_all_combinations(selected_item_set, board):
     elif successful_combinations_count == 0:
         print("No successful combination found.")
     else:
-        print("Exactly one successful combination found.",  "Combination: ",g_combi_num, "Steps: ", g_steps )
+        print("Exactly one successful combination found.", "Steps:", actual_steps)
+
     return successful_combinations_count
 
 def print_board_csv(start_board):
 
     csv_fajl_nev = 'board_game.csv'
     data = [",".join(map(str, row)) for row in start_board]  # Sorok vesszővel választva
+    global steps
+    global steps_2
     # Az adatok írása a CSV fájlba
     with open(csv_fajl_nev, mode='a', newline='') as file:
         if os.path.exists(csv_fajl_nev):
             file.write('"')
             file.write('\n'.join(data))  # Sorokat idézőjelek között vesszővel elválasztva írjuk
             file.write('",')
-            file.write(str(g_steps))  # Lépésszám hozzáadása
+            #file.write(str(steps_2))  # Lépésszám hozzáadása
+            #file.write(',')
+            file.write(str(round(actual_steps)))  # Lépésszám hozzáadása
             file.write('\n')
 
-def main(board_size):
-    board_name, board, start_board = create_random_board(board_size)
-   # print(f"Selected Board:")
-   # for row in start_board:
-   #     print(row)
-    #print(f"Board Name: {board_name}")
+def main(board=None, board_name=None, board_size=8):
+    if board is None:
+        board_name, board, start_board = create_random_board(board_size)
+    else:
+        start_board = [row[:] for row in board]
 
-    # Formázás és tesztelés
+    print(f"Selected Board:")
+    for row in start_board:
+        print(row)
+
     selected_item_set = load_items(board_name)
     selected_item_set = added_rotate(selected_item_set)
     selected_item_set = remove_empty(selected_item_set)
     selected_item_set.pop()
-
-    #for row in selected_item_set:
-    #    print(row)
-
     successful_combinations_count = run_all_combinations(selected_item_set, board)
+
     return successful_combinations_count, start_board
 
-def save_game_to_csv(num_games):
+
+def save_game_to_csv(num_games, read_from_csv=False, csv_path='input.csv'):
     counter = 0
-    while (counter < num_games):
-        successful_combinations_count, start_board = main(8)
-        if (successful_combinations_count == 1):
+    if read_from_csv:
+        boards = load_boards_from_csv(csv_path)
+    else:
+        boards = [None] * num_games
+
+    while counter < num_games:
+        if read_from_csv:
+            while True:
+                try:
+                    board = next(boards)
+                    board_name = "board_8_8"
+
+                    successful_combinations_count, start_board = main(board, board_name)
+
+                    if successful_combinations_count == 1:
+                        print_board_csv(start_board)
+                        counter += 1
+                    steps = 0
+                    steps_2 = 0
+
+                except StopIteration:
+                    print("No more boards to read from the CSV.")
+                    break
+        else:
+            board = None
+            board_name = None
+
+        successful_combinations_count, start_board = main(board, board_name)
+
+        if successful_combinations_count == 1:
             print_board_csv(start_board)
-            global g_steps
-            g_steps = 0
-            global g_steps_suc
-            g_steps_suc = 0
-            global l_steps
-            l_steps = 0
-            counter = counter + 1
+            counter += 1
 
 # x játék létrehozása és CSV fájlba mentése
-save_game_to_csv(290)
+save_game_to_csv(1, read_from_csv=True)
